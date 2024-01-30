@@ -68,7 +68,7 @@
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
   },
-  "repository": "https://github.com/pratikshinde590/sparrow-ap.git",
+  "repository": "https://github.com/pratikshinde590/sparrow_app.git",
   "release": {
     "branches": [
       "main"
