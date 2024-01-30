@@ -71,7 +71,7 @@
   "repository": "https://github.com/pratikshinde590/sparrow-ap.git",
   "release": {
     "branches": [
-      "development"
+      "main"
     ],
     "plugins": [
       "@semantic-release/commit-analyzer",
