@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/pratikshinde590/sparrow_app/compare/v1.0.0...v1.1.0) (2024-01-31)
+
+
+### Features
+
+* created release.yaml[2] ([a3a3157](https://github.com/pratikshinde590/sparrow_app/commit/a3a315707817a4a8cd5ffac71a77ef9d029336c1))
+
 # 1.0.0 (2024-01-31)
 
 
