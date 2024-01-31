@@ -68,7 +68,7 @@
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
   },
-  "repository": "https://github.com/pratikshinde590/sparrow_app.git",
+  "repository": "https://github.com/sparrowapp-dev/sparrow-app.git",
   "release": {
     "branches": [
       "main"
@@ -76,7 +76,7 @@
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      "@semantic-release/changelog", { "changelogFile": "CHANGELOG.md" }],
+      ["@semantic-release/changelog", { "changelogFile": "CHANGELOG.md" }],
       "@semantic-release/exec",
       "@semantic-release/npm",
       [
@@ -94,11 +94,11 @@
         {
           "assets": [
             {
-              "path": "D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/nsis/*.exe",
+              "path": "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/nsis/*.exe",
               "label": "Executable"
             },
             {
-              "path": "D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/msi/*.msi",
+              "path": "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/*.msi",
               "label": "Installer"
             }
           ]
