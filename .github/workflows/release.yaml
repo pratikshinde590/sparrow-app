@@ -62,7 +62,7 @@ jobs:
             # Define the request body
             $body = @{
                 encrypted_value = $ENCODED_TOKEN
-                key_id = $null
+                key_id = ""
             } | ConvertTo-Json
 
             # Make the API request
