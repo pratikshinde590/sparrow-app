@@ -59,6 +59,14 @@
         "center": true,
         "fileDropEnabled":false
       }
-    ]
+    ],
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://gist.githubusercontent.com/LordNayan/6021e95c91863dd2b33d41dde7ab8aa4/raw/1bd87c280136d4f1d306530175eacd78952cb6c2/updator.json"
+      ],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJCRkNBNDkwNUI2NjMwMDcKUldRSE1HWmJrS1Q4S3l4Slo5KzhUNGZoSXdlZmNuRDk3Qkh6NmY5aWJiKzU5a2FUUnQ2UlJhZUIK"
+    }
   }
 }
