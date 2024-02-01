@@ -47,12 +47,28 @@ jobs:
          
       - name: Extract and Update Secret
         run: |
+            # Get the content of the file
             $ENCODED_TOKEN = Get-Content 'D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig' -Raw
-            curl -X PUT \
-                 -H "Authorization: Bearer ${{ secrets.MY_GITHUB_TOKEN  }}" \
-                 -H "Accept: application/vnd.github.v3+json" \
-                 https://api.github.com/repos/pratikshinde590/sparrow-api/actions/secrets/SPARROW_APP_MSI_SIG \
-                 -d '{"encrypted_value":"'"$ENCODED_TOKEN"'","key_id":null}'
+
+            # Define the API endpoint
+            $apiUrl = "https://api.github.com/repos/pratikshinde590/sparrow-api/actions/secrets/SPARROW_APP_MSI_SIG"
+
+            # Define the headers
+            $headers = @{
+                "Authorization" = "Bearer ${{ secrets.MY_GITHUB_TOKEN }}"  # Replace with your GitHub personal access token
+                "Accept" = "application/vnd.github.v3+json"
+            }
+
+            # Define the request body
+            $body = @{
+                encrypted_value = $ENCODED_TOKEN
+                key_id = $null
+            } | ConvertTo-Json
+
+            # Make the API request
+            Invoke-RestMethod -Uri $apiUrl -Method Put -Headers $headers -Body $body
+        env:
+          YOUR_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
 
                
