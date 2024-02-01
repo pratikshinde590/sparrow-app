@@ -49,22 +49,33 @@ jobs:
         run: |
             # Get the content of the file
             $ENCODED_TOKEN = Get-Content 'D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig' -Raw
-            # Define the API endpoint
-            $apiUrl = "https://api.github.com/repos/pratikshinde590/sparrow-api/actions/secrets/SPARROW_APP_MSI_SIG"
-            # Define the headers
-            $headers = @{
-                "Authorization" = "Bearer ${{ secrets.MY_GITHUB_TOKEN }}"  # Replace with your GitHub personal access token
-                "Accept" = "application/vnd.github.v3+json"
+
+            # Define the GitHub API endpoint for updating secret in another repository
+            $repoOwner = "pratikshinde590"  # Replace with the owner of the repository
+            $repoName = "sparrow-api"      # Replace with the name of the repository
+            $secretName = "SPARROW_APP_MSI_SIG"
+
+            $url = "https://api.github.com/repos/$repoOwner/$repoName/actions/secrets/$secretName"
+
+            try {
+                # Use PowerShell to update the secret
+                Invoke-RestMethod -Uri $url -Method Put -Headers @{
+                    "Accept" = "application/vnd.github.v3+json"
+                    "Authorization" = "Bearer $env:MY_GITHUB_TOKEN"
+                    "X-GitHub-Api-Version" = "2022-11-28"
+                } -Body @{
+                    encrypted_value = $ENCODED_TOKEN
+                    key_id = ""
+                } | Out-Null  # Out-Null is used to suppress the output
+            } catch {
+                Write-Host "Error: $_"
+                Write-Host "Failed to update secret. Please check your GitHub token and permissions."
+                exit 1
             }
-            # Define the request body
-            $body = @{
-                encrypted_value = $ENCODED_TOKEN
-                key_id = ""
-            } | ConvertTo-Json
-            # Make the API request
-            Invoke-RestMethod -Uri $apiUrl -Method Put -Headers $headers -Body $body
         env:
           YOUR_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+
 
 
                
