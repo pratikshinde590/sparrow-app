@@ -50,18 +50,20 @@ jobs:
             # Get the content of the file
             $ENCODED_TOKEN = Get-Content 'D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig' -Raw
 
-            # Define the GitHub API endpoint for updating secret
-            $apiUrl = "https://api.github.com/repos/pratikshinde590/sparrow-api/actions/secrets/SPARROW_APP_MSI_SIG"
+            $url = "https://api.github.com/repos/pratikshinde590/sparrow-api/actions/secrets/SPARROW_APP_MSI_SIG"
+            $headers = @{
+            "Accept" = "application/vnd.github+json"
+            "Authorization" = "Bearer $env:MY_GITHUB_TOKEN"
+            "X-GitHub-Api-Version" = "2022-11-28"
+            }
+            $body = @{
+            encrypted_value = $ENCODED_TOKEN
+            key_id = ""
+            } | ConvertTo-Json
 
-            # Use Git for Windows' curl to update the secret
-            & "C:\Program Files\Git\mingw64\bin\curl.exe `
-              -H "Accept: application/vnd.github+json" `
-              -H "Authorization: Bearer $env:MY_GITHUB_TOKEN" `
-              -H "X-GitHub-Api-Version: 2022-11-28" `
-              $apiUrl `
-              -d "{\"encrypted_value\":\"$ENCODED_TOKEN\",\"key_id\":\"\"}"
+            Invoke-RestMethod -Uri $url -Method Put -Headers $headers -Body $body
         env:
-          YOUR_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
 
 
