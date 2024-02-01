@@ -36,10 +36,20 @@ jobs:
             # yarn tauri build --debug
       - name: Build Tauri App
         run: |
-            $env:TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-            $env:TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}"
-             yarn tauri build --debug
-            
+            export TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
+            export TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" yarn tauri build --debug
+         
+      - name: Extract and Update Secret
+        run: |
+            ENCODED_TOKEN=$(grep '.*' D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig)
+            curl -X PUT \
+                 -H "Authorization: Bearer ${{ secrets.MY_GITHUB_TOKEN  }}" \
+                 -H "Accept: application/vnd.github.v3+json" \
+                 https://api.github.com/repos/pratikshinde590/sparrow-api/actions/secrets/SPARROW_APP_MSI_SIG \
+                 -d '{"encrypted_value":"'"$ENCODED_TOKEN"'","key_id":null}'
+
+
+               
 
       - name: Fetch Version from package.json
         id: fetch-version
