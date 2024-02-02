@@ -19,7 +19,7 @@ jobs:
         url="https://api.github.com/repos/pratikshinde590/sparrow_app/actions/secrets/public-key"
         headers=(
          "Accept: application/vnd.github.v3+json"
-         "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}"
+         "Authorization: token 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"
          "X-GitHub-Api-Version: 2022-11-28"
         )
         response=$(curl -sSL -H "${headers[@]}" $url)
