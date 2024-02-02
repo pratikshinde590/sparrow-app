@@ -16,23 +16,26 @@ jobs:
     - name: Get Public Key
       id: get-key
       run: |
-        $url = "https://api.github.com/repos/pratikshinde590/sparrow_app/actions/secrets/public-key"
-        $headers = @{
-          "Accept" = "application/vnd.github+json"
-          "Authorization" = "token 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"
-          "X-GitHub-Api-Version" = "2022-11-28"
-        }
+        url="https://api.github.com/repos/OWNER/REPO/actions/secrets/public-key"
+        headers=(
+         "Accept: application/vnd.github.v3+json"
+         "Authorization: Bearer ${{ secrets.MY_GITHUB_TOKEN }}"
+         "X-GitHub-Api-Version: 2022-11-28"
+        )
+        response=$(curl -sSL -H "${headers[@]}" $url)
+        echo "Response: $response"
 
-        # Make the request using Invoke-WebRequest
-        $response = Invoke-WebRequest -Uri $url -Headers $headers
+      shell: bash
 
-        # Extract the public key and key ID from the response JSON
-        $publicKey = $response.Content | ConvertFrom-Json
-        $publicKeyBase64 = $publicKey.key
-        $keyId = $publicKey.key_id
 
-        # Set environment variables for later use
-        echo "PUBLIC_KEY=$publicKeyBase64" >> $env:GITHUB_ENV
-        echo "KEY_ID=$keyId" >> $env:GITHUB_ENV
 
-      shell: pwsh
+        # # Extract the public key and key ID from the response JSON
+        # $publicKey = $response.Content | ConvertFrom-Json
+        # $publicKeyBase64 = $publicKey.key
+        # $keyId = $publicKey.key_id
+
+        # # Set environment variables for later use
+        # echo "PUBLIC_KEY=$publicKeyBase64" >> $env:GITHUB_ENV
+        # echo "KEY_ID=$keyId" >> $env:GITHUB_ENV
+
+      # shell: pwsh
