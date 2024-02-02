@@ -1,4 +1,4 @@
-name: Semantic Release
+name: Update Secret in sparrow-api
 
 on:
   push:
@@ -6,92 +6,33 @@ on:
       - main
 
 jobs:
-  release:
+  update-secret:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20.8'
+    - name: Get Public Key
+      id: get-key
+      run: |
+        $url = "https://api.github.com/repos/pratikshinde590/sparrow_app/actions/secrets/public-key"
+        $headers = @{
+          "Accept" = "application/vnd.github.v3+json"
+          "Authorization" = "Bearer $env:MY_GITHUB_TOKEN"
+          "X-GitHub-Api-Version" = "2022-11-28"
+        }
 
-      - name: Install Windows SDK
-        run: Invoke-WebRequest -Uri https://aka.ms/winsdk/10/latest/SdkSetup.exe -OutFile $env:TEMP\SdkSetup.exe
-        shell: powershell
+        # Make the request using Invoke-WebRequest
+        $response = Invoke-WebRequest -Uri $url -Headers $headers
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1
+        # Extract the public key and key ID from the response JSON
+        $publicKey = $response.Content | ConvertFrom-Json
+        $publicKeyBase64 = $publicKey.key
+        $keyId = $publicKey.key_id
 
-      - name: Install dependencies
-        run: |
-            yarn cache clean
-            npm install -g pnpm
-            # pnpm install
-            yarn install
-            # yarn tauri build --debug
-      - name: Build Tauri App
-        run: |
-            $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-            $TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
-            yarn tauri build --debug
-        env:
-           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        # Set environment variables for later use
+        echo "PUBLIC_KEY=$publicKeyBase64" >> $env:GITHUB_ENV
+        echo "KEY_ID=$keyId" >> $env:GITHUB_ENV
 
-         
-      - name: Extract and Update Secret
-        run: |
-            # Get the content of the file
-            $ENCODED_TOKEN = Get-Content 'D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig' -Raw
-
-            # Define the GitHub API endpoint for updating secret in another repository
-            $repoOwner = "pratikshinde590"  # Replace with the owner of the repository
-            $repoName = "sparrow-api"      # Replace with the name of the repository
-            $secretName = "SPARROW_APP_MSI_SIG"
-
-            $url = "https://api.github.com/repos/$repoOwner/$repoName/actions/secrets/$secretName"
-
-            try {
-                # Use PowerShell to update the secret
-                Invoke-RestMethod -Uri $url -Method Put -Headers @{
-                    "Accept" = "application/vnd.github.v3+json"
-                    "Authorization" = "Bearer $env:MY_GITHUB_TOKEN"
-                    "X-GitHub-Api-Version" = "2022-11-28"
-                } -Body @{
-                    encrypted_value = $ENCODED_TOKEN
-                    key_id = ""
-                } | Out-Null  # Out-Null is used to suppress the output
-            } catch {
-                Write-Host "Error: $_"
-                Write-Host "Failed to update secret. Please check your GitHub token and permissions."
-                exit 1
-            }
-        env:
-          YOUR_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-
-
-
-
-               
-
-      - name: Fetch Version from package.json
-        id: fetch-version
-        run: echo "::set-output name=version::$(jq -r .version package.json)"
-            
-      - name: Rename .exe file with version
-        run: mv D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/nsis/sparrow-app_0.0.0_x64-setup.exe "D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/nsis/sparrow-app_${{ steps.fetch-version.outputs.version }}_x64-setup.exe"
-
-      - name: Rename .msi file with version
-        run: mv D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi "D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/msi/sparrow-app_${{ steps.fetch-version.outputs.version }}_x64_en-US.msi"
-    
-
-      - name: Semantic Release
-        run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }} #github_token
+      shell: pwsh
