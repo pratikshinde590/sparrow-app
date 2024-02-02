@@ -18,7 +18,7 @@ jobs:
       run: |
         $url = "https://api.github.com/repos/pratikshinde590/sparrow_app/actions/secrets/public-key"
         $headers = @{
-          "Accept" = "application/vnd.github.v3+json"
+          "Accept" = "application/vnd.github+json"
           "Authorization" = "token $env:MY_GITHUB_TOKEN"
           "X-GitHub-Api-Version" = "2022-11-28"
         }
