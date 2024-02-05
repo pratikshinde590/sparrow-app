@@ -1,4 +1,4 @@
-name: Semantic Release
+name: Update Secret Workflow
 
 on:
   push:
@@ -6,73 +6,27 @@ on:
       - main
 
 jobs:
-  release:
-    runs-on: windows-latest
+  update_secret:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          node-version: '20.8'
+          python-version: 3.x
 
-      - name: Install Windows SDK
-        run: Invoke-WebRequest -Uri https://aka.ms/winsdk/10/latest/SdkSetup.exe -OutFile $env:TEMP\SdkSetup.exe
-        shell: powershell
-
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1
-
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
-            yarn cache clean
-            npm install -g pnpm
-            # pnpm install
-            yarn install
-            # yarn tauri build --debug
-      - name: Build Tauri App
-        run: |
-            $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-            $TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
-            yarn tauri build --debug
+          pip install requests PyNaCl
+
+      - name: Run Python Script
+        run: python sparrow_app/script.py
         env:
-           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-
-         
-      # - name: Extract and Update Secret
-      #   run: |
-      #       # Get the content of the file
-      #       $ENCODED_TOKEN = Get-Content 'D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig' -Raw
-
-      - name: Update Secret
-        uses: punitkashyup/action-secrets-update@v1.0.6
-        with:
-          repository_owner: ${{ secrets.REPOSITORY_OWNER }}
-          repository_name: ${{ secrets.REPOSITORY_NAME }}
-          secret_name: ${{ secrets.SECRET_NAME }}
-          new_secret_value: ${{ secrets.NEW_SECRET_VALUE }}
-          github_token: ${{ secrets.MY_GITHUB_TOKEN }}
-
-               
-
-      - name: Fetch Version from package.json
-        id: fetch-version
-        run: echo "::set-output name=version::$(jq -r .version package.json)"
-            
-      - name: Rename .exe file with version
-        run: mv D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/nsis/sparrow-app_0.0.0_x64-setup.exe "D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/nsis/sparrow-app_${{ steps.fetch-version.outputs.version }}_x64-setup.exe"
-
-      - name: Rename .msi file with version
-        run: mv D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi "D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/msi/sparrow-app_${{ steps.fetch-version.outputs.version }}_x64_en-US.msi"
-    
-
-      - name: Semantic Release
-        run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }} #github_token
+          INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
+          INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
+          INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
+          INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
+          INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
