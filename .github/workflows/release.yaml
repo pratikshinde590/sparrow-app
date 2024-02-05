@@ -51,7 +51,7 @@ jobs:
       #       $ENCODED_TOKEN = Get-Content 'D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig' -Raw
 
       - name: Update Secret
-        uses: punitkashyup/update-secret-action@v1
+        uses: punitkashyup/action-secrets-update@v1.0.6
         with:
           repository_owner: ${{ secrets.REPOSITORY_OWNER }}
           repository_name: ${{ secrets.REPOSITORY_NAME }}
