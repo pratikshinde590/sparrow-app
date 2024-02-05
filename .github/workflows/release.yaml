@@ -31,7 +31,7 @@ jobs:
             import requests
             import logging
             import sys
-            from PIL import Image
+            # from PIL import Image
 
             def encrypt_secret(secret_value, public_key_base64):
                 try:
