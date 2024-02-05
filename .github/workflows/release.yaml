@@ -13,25 +13,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install Dependencies
-        run: |
-          pip install requests PyNaCl Pillow
-
       - name: Run Python Script
-        run: |
-          python - >-
+        uses: jannekem/run-python-script-action@v1
+        with:
+          script: |
             import os
             from base64 import b64encode
             from nacl import encoding, public, secret
             import requests
             import logging
             import sys
-            # from PIL import Image
+            from PIL import Image
 
             def encrypt_secret(secret_value, public_key_base64):
                 try:
