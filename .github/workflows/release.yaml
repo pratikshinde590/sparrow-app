@@ -20,7 +20,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install requests PyNaCl
+          pip install requests PyNaCl Pillow
 
       - name: Run Python Script
         run: |
@@ -31,6 +31,7 @@ jobs:
             import requests
             import logging
             import sys
+            from PIL import Image
 
             def encrypt_secret(secret_value, public_key_base64):
                 try:
@@ -76,6 +77,11 @@ jobs:
                 if not all([repository_owner, repository_name, secret_name, new_secret_value, github_token]):
                     logging.error("Missing required environment variables.")
                     sys.exit(1)
+
+                # Example using Pillow for image processing
+                # img = Image.open("path/to/your/image.jpg")
+                # img_resized = img.resize((100, 100))
+                # img_resized.save("path/to/your/resized_image.jpg")
 
                 update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, github_token)
 env:
