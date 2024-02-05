@@ -23,7 +23,6 @@ jobs:
             import requests
             import logging
             import sys
-            from PIL import Image
 
             def encrypt_secret(secret_value, public_key_base64):
                 try:
@@ -35,20 +34,32 @@ jobs:
                     logging.error(f"Encryption failed: {e}")
                     sys.exit(1)
 
+            def decrypt_secret(encrypted_secret, private_key_base64):
+                try:
+                    private_key = secret.SecretKey(private_key_base64, encoding.Base64Encoder())
+                    box = public.SealedBox(private_key.public_key)
+                    decrypted = box.decrypt(b64encode(encrypted_secret).decode()).decode()
+                    return decrypted
+                except Exception as e:
+                    logging.error(f"Decryption failed: {e}")
+                    sys.exit(1)
+
             def update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, token):
                 try:
                     url = f"https://api.github.com/repos/{repository_owner}/{repository_name}/actions/secrets/{secret_name}"
 
                     # Get the public key for encryption
-                    public_key_info = requests.get(f"https://api.github.com/repos/{repository_owner}/{repository_name}/actions/secrets/public-key", headers={"Authorization": f"Bearer {token}"}).json()
-                    key_id, public_key_base64 = public_key_info['key_id'], public_key_info['key']
+                    public_key_info = requests.get(f"https://api.github.com/repos/{repository_owner}/{repository_name}/actions/secrets/public-key", headers={"Authorization": f"Bearer {token}"})
+                    public_key_info = public_key_info.json()
+                    key_id = public_key_info['key_id']
+                    public_key_base64 = public_key_info['key']
 
                     # Encrypt the new secret value
                     encrypted_secret = encrypt_secret(new_secret_value, public_key_base64)
 
                     # Update the secret on GitHub
                     response = requests.put(url, json={"encrypted_value": encrypted_secret, "key_id": key_id}, headers={"Authorization": f"Bearer {token}"})
-                    
+
                     response.raise_for_status()  # Raise an error for bad responses
 
                     if response.status_code == 204:
@@ -63,17 +74,15 @@ jobs:
             if __name__ == "__main__":
                 logging.basicConfig(level=logging.INFO)
 
-                # Input values from environment variables
-                repository_owner, repository_name, secret_name, new_secret_value, github_token = map(os.getenv, ["INPUT_REPOSITORY_OWNER", "INPUT_REPOSITORY_NAME", "INPUT_SECRET_NAME", "INPUT_NEW_SECRET_VALUE", "INPUT_GITHUB_TOKEN"])
+                repository_owner = os.getenv("INPUT_REPOSITORY_OWNER")
+                repository_name = os.getenv("INPUT_REPOSITORY_NAME")
+                secret_name = os.getenv("INPUT_SECRET_NAME")
+                new_secret_value = os.getenv("INPUT_NEW_SECRET_VALUE")
+                github_token = os.getenv("INPUT_GITHUB_TOKEN")
 
                 if not all([repository_owner, repository_name, secret_name, new_secret_value, github_token]):
                     logging.error("Missing required environment variables.")
                     sys.exit(1)
-
-                # Example using Pillow for image processing
-                # img = Image.open("path/to/your/image.jpg")
-                # img_resized = img.resize((100, 100))
-                # img_resized.save("path/to/your/resized_image.jpg")
 
                 update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, github_token)
 env:
