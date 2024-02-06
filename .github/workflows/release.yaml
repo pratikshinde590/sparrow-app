@@ -44,6 +44,14 @@ jobs:
            TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
            GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
+
+      - name: Unzip file
+        run: |
+          Expand-Archive -Path D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig -DestinationPath D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/unzipped/
+          $fileContent = Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/unzipped/sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+          echo "::set-output name=fileContent::$fileContent"
+
+
       - name: Debugging output
         run: |
           ls -l D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/
