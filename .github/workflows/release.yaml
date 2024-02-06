@@ -48,11 +48,8 @@ jobs:
       - name: Extract Secret Value
         id: extract_secret
         run: |
-         SECRET_VALUE=$(cat D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig)
-         echo "::set-output name=secret_value::$SECRET_VALUE"
-        # Extracting the secret value from the specified file
-        # Modify this command according to your requirements to extract the value from the file
-        # Here, we're assuming the secret is stored as plain text in the file
+          $SECRET_VALUE = Get-Content "D:/a/sparrow_app/sparrow_app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig"
+          echo "::set-output name=secret_value::$SECRET_VALUE"
         
       
       - name: Update Secret
