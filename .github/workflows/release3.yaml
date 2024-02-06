@@ -49,12 +49,15 @@ jobs:
         id: vars
         run: echo "version=$(cat ${{ github.workspace }}\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig)" >> $GITHUB_OUTPUT
      
+      - name: Test output
+        run: echo ${{ steps.vars.outputs.version }}
+        
       - name: Get version
         id: vars1
         run: echo "version=$(cat ${{ github.workspace }}/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig)" >> $GITHUB_OUTPUT
         
       - name: Test output
-        run: echo ${{ steps.vars.outputs.version }}
+        run: echo ${{ steps.vars1.outputs.version }}
 
       - name: Set up Python
         uses: actions/setup-python@v2
