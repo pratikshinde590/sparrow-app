@@ -1,4 +1,5 @@
-name: Update Secret Workflow
+
+name: Semantic Release
 
 on:
   push:
@@ -6,21 +7,62 @@ on:
       - main
 
 jobs:
-  update_secret:
+  release:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.8'
+
+      - name: Install Windows SDK
+        run: Invoke-WebRequest -Uri https://aka.ms/winsdk/10/latest/SdkSetup.exe -OutFile $env:TEMP\SdkSetup.exe
+        shell: powershell
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1
+
+      - name: Install dependencies
+        run: |
+            yarn cache clean
+            npm install -g pnpm
+            # pnpm install
+            yarn install
+            # yarn tauri build --debug
+      - name: Build Tauri App
+        run: |
+            $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
+            $TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
+            yarn tauri build --debug
+        env:
+           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      - name: Read file sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+        id: package
+        uses: jaywcjlove/github-action-read-file@main
+        with:
+           path: D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+
+      - name: Echo package.json
+        run: echo "${{ steps.package.outputs.content }}"
 
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.x
-
+             python-version: 3.x
+   
       - name: Install Dependencies
         run: |
-          pip install PyNaCl requests
+             pip install PyNaCl requests
+
       - name: Run Python Script
         uses: jannekem/run-python-script-action@v1
         with:
@@ -31,6 +73,7 @@ jobs:
             import requests
             import logging
             import sys
+
             def encrypt_secret(secret_value, public_key_base64):
                 try:
                     public_key = public.PublicKey(public_key_base64, encoding.Base64Encoder())
@@ -40,6 +83,7 @@ jobs:
                 except Exception as e:
                     logging.error(f"Encryption failed: {e}")
                     sys.exit(1)
+
             def decrypt_secret(encrypted_secret, private_key_base64):
                 try:
                     private_key = secret.SecretKey(private_key_base64, encoding.Base64Encoder())
@@ -49,9 +93,11 @@ jobs:
                 except Exception as e:
                     logging.error(f"Decryption failed: {e}")
                     sys.exit(1)
+
             def update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, token):
                 try:
                     url = f"https://api.github.com/repos/{repository_owner}/{repository_name}/actions/secrets/{secret_name}"
+
                     # Get the public key for encryption
                     public_key_info = requests.get(f"https://api.github.com/repos/{repository_owner}/{repository_name}/actions/secrets/public-key", headers={"Authorization": f"Bearer {token}"})
                     public_key_info = public_key_info.json()
@@ -59,11 +105,15 @@ jobs:
                     key_id = public_key_info.get('key_id')
                     logging.info(f"Key ID: {key_id}")
                     public_key_base64 = public_key_info.get('key')
+
                     # Encrypt the new secret value
                     encrypted_secret = encrypt_secret(new_secret_value, public_key_base64)
+
                     # Update the secret on GitHub
                     response = requests.put(url, json={"encrypted_value": encrypted_secret, "key_id": key_id}, headers={"Authorization": f"Bearer {token}"})
+
                     response.raise_for_status()  # Raise an error for bad responses
+
                     if response.status_code == 204:
                         logging.info(f"Secret '{secret_name}' updated successfully.")
                     else:
@@ -72,20 +122,24 @@ jobs:
                 except Exception as e:
                     logging.error(f"An unexpected error occurred: {e}")
                     sys.exit(1)
+
             if __name__ == "__main__":
                 logging.basicConfig(level=logging.INFO)
+
                 repository_owner = os.getenv("INPUT_REPOSITORY_OWNER")
                 repository_name = os.getenv("INPUT_REPOSITORY_NAME")
                 secret_name = os.getenv("INPUT_SECRET_NAME")
                 new_secret_value = os.getenv("INPUT_NEW_SECRET_VALUE")
                 github_token = os.getenv("INPUT_GITHUB_TOKEN")
+
                 if not all([repository_owner, repository_name, secret_name, new_secret_value, github_token]):
                     logging.error("Missing required environment variables.")
                     sys.exit(1)
+
                 update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, github_token)
-env:
-  INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
-  INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
-  INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
-  INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
-  INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        env:
+          INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
+          INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
+          INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
+          INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
+          INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
