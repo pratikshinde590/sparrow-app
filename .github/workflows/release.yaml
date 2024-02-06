@@ -83,9 +83,9 @@ jobs:
                     logging.error("Missing required environment variables.")
                     sys.exit(1)
                 update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, github_token)
-# env:
-#   INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
-#   INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
-#   INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
-#   INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
-#   INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+env:
+  INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
+  INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
+  INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
+  INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
+  INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
