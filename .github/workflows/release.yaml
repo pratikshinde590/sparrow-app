@@ -52,7 +52,7 @@ jobs:
         id: read_file
         uses: andstor/file-reader-action@v1
         with:
-          path: D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+          path: D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig
 
       - name: File contents
         run: echo "${ steps.read_file.outputs.contents }"
