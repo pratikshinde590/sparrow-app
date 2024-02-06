@@ -60,8 +60,10 @@ jobs:
                     # Get the public key for encryption
                     public_key_info = requests.get(f"https://api.github.com/repos/{repository_owner}/{repository_name}/actions/secrets/public-key", headers={"Authorization": f"Bearer {token}"})
                     public_key_info = public_key_info.json()
-                    key_id = public_key_info['key_id']
-                    public_key_base64 = public_key_info['key']
+                    logging.info(f"Public Key Info: {public_key_info}")
+                    key_id = public_key_info.get('key_id')
+                    logging.info(f"Key ID: {key_id}")
+                    public_key_base64 = public_key_info.get('key')
 
                     # Encrypt the new secret value
                     encrypted_secret = encrypt_secret(new_secret_value, public_key_base64)
