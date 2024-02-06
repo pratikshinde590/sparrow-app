@@ -94,7 +94,7 @@ jobs:
                     logging.error(f"Decryption failed: {e}")
                     sys.exit(1)
 
-            def update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, token):
+            def update_github_secret(repository_owner, repository_name, secret_name, file_content, token):
                 try:
                     url = f"https://api.github.com/repos/{repository_owner}/{repository_name}/actions/secrets/{secret_name}"
 
@@ -107,7 +107,7 @@ jobs:
                     public_key_base64 = public_key_info.get('key')
 
                     # Encrypt the new secret value
-                    encrypted_secret = encrypt_secret(new_secret_value, public_key_base64)
+                    encrypted_secret = encrypt_secret(file_content, public_key_base64)
 
                     # Update the secret on GitHub
                     response = requests.put(url, json={"encrypted_value": encrypted_secret, "key_id": key_id}, headers={"Authorization": f"Bearer {token}"})
@@ -129,17 +129,17 @@ jobs:
                 repository_owner = os.getenv("INPUT_REPOSITORY_OWNER")
                 repository_name = os.getenv("INPUT_REPOSITORY_NAME")
                 secret_name = os.getenv("INPUT_SECRET_NAME")
-                new_secret_value = os.getenv("INPUT_NEW_SECRET_VALUE")
+                file_content = os.getenv("INPUT_FILE_CONTENT")
                 github_token = os.getenv("INPUT_GITHUB_TOKEN")
 
-                if not all([repository_owner, repository_name, secret_name, new_secret_value, github_token]):
+                if not all([repository_owner, repository_name, secret_name, file_content, github_token]):
                     logging.error("Missing required environment variables.")
                     sys.exit(1)
 
-                update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, github_token)
+                update_github_secret(repository_owner, repository_name, secret_name, file_content, github_token)
         env:
           INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
           INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
           INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
-          INPUT_NEW_SECRET_VALUE: ${{ steps.package.outputs.content }}
+          INPUT_FILE_CONTENT: ${{ steps.package.outputs.content }}
           INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
