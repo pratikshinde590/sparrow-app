@@ -44,6 +44,13 @@ jobs:
            TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
            GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
+      - name: Debugging output
+        run: |
+          ls -l D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/
+          dir D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/
+
+
+
       - name: Read file sparrow-app_0.0.0_x64_en-US.msi.zip.sig
         id: package
         uses: jaywcjlove/github-action-read-file@main
