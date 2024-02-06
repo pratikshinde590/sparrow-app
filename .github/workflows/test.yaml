@@ -16,13 +16,13 @@ jobs:
 
     - name: Set up secret file
       env:
-        DEBUG_PASSWORD: ${{ secrets.NEW_SECRET_VALUE }}
+        DEBUG_PASSWORD: ${{ secrets.SPARROW_APP_MSI_SIG }}
       run: |
         echo $DEBUG_PASSWORD >> secrets.txt
 
     - name: Set env as secret
       env:
-        MY_VAL: ${{ secrets.NEW_SECRET_VALUE }}
+        MY_VAL: ${{ secrets.SPARROW_APP_MSI_SIG }}
       run: |
         import os
         for q in (os.getenv("MY_VAL")):
