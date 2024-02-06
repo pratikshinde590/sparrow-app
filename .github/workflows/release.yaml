@@ -46,6 +46,15 @@ jobs:
            GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
       - name: Read file sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+        id: package1
+        uses: jaywcjlove/github-action-read-file@main
+        with:
+           path: package.json
+
+      - name: Echo package.json
+        run: echo "${{ steps.package1.outputs.content }}"
+        
+      - name: Read file sparrow-app_0.0.0_x64_en-US.msi.zip.sig
         id: package
         uses: jaywcjlove/github-action-read-file@main
         with:
