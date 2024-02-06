@@ -34,6 +34,7 @@ jobs:
             # pnpm install
             yarn install
             # yarn tauri build --debug
+
       - name: Build Tauri App
         run: |
             $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
@@ -43,6 +44,19 @@ jobs:
            TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
            TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
            GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      - name: Read file sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+        id: package
+        uses: jaywcjlove/github-action-read-file@main
+        with:
+           path: D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+
+      - name: Modify file content
+        run: |
+          echo "${{ secrets.NEW_SECRET_VALUE }}" > D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+
+      - name: Verify file content
+        run: type D:\a\sparrow_app\sparrow_app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -127,9 +141,9 @@ jobs:
                     sys.exit(1)
 
                 update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, github_token)
-env:
-  INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
-  INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
-  INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
-  INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
-  INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        env:
+          INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
+          INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
+          INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
+          INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
+          INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
