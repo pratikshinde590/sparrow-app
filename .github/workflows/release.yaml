@@ -34,7 +34,6 @@ jobs:
             # pnpm install
             yarn install
             # yarn tauri build --debug
-
       - name: Build Tauri App
         run: |
             $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
@@ -62,7 +61,6 @@ jobs:
       - name: Install Dependencies
         run: |
              pip install PyNaCl requests
-
       - name: Run Python Script
         uses: jannekem/run-python-script-action@v1
         with:
@@ -73,7 +71,6 @@ jobs:
             import requests
             import logging
             import sys
-
             def encrypt_secret(secret_value, public_key_base64):
                 try:
                     public_key = public.PublicKey(public_key_base64, encoding.Base64Encoder())
@@ -83,7 +80,6 @@ jobs:
                 except Exception as e:
                     logging.error(f"Encryption failed: {e}")
                     sys.exit(1)
-
             def decrypt_secret(encrypted_secret, private_key_base64):
                 try:
                     private_key = secret.SecretKey(private_key_base64, encoding.Base64Encoder())
@@ -93,11 +89,9 @@ jobs:
                 except Exception as e:
                     logging.error(f"Decryption failed: {e}")
                     sys.exit(1)
-
-            def update_github_secret(repository_owner, repository_name, secret_name, file_content, token):
+            def update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, token):
                 try:
                     url = f"https://api.github.com/repos/{repository_owner}/{repository_name}/actions/secrets/{secret_name}"
-
                     # Get the public key for encryption
                     public_key_info = requests.get(f"https://api.github.com/repos/{repository_owner}/{repository_name}/actions/secrets/public-key", headers={"Authorization": f"Bearer {token}"})
                     public_key_info = public_key_info.json()
@@ -105,15 +99,11 @@ jobs:
                     key_id = public_key_info.get('key_id')
                     logging.info(f"Key ID: {key_id}")
                     public_key_base64 = public_key_info.get('key')
-
                     # Encrypt the new secret value
-                    encrypted_secret = encrypt_secret(file_content, public_key_base64)
-
+                    encrypted_secret = encrypt_secret(new_secret_value, public_key_base64)
                     # Update the secret on GitHub
                     response = requests.put(url, json={"encrypted_value": encrypted_secret, "key_id": key_id}, headers={"Authorization": f"Bearer {token}"})
-
                     response.raise_for_status()  # Raise an error for bad responses
-
                     if response.status_code == 204:
                         logging.info(f"Secret '{secret_name}' updated successfully.")
                     else:
@@ -122,24 +112,20 @@ jobs:
                 except Exception as e:
                     logging.error(f"An unexpected error occurred: {e}")
                     sys.exit(1)
-
             if __name__ == "__main__":
                 logging.basicConfig(level=logging.INFO)
-
-                repository_owner = os.getenv("INPUT_REPOSITORY_OWNER")
-                repository_name = os.getenv("INPUT_REPOSITORY_NAME")
-                secret_name = os.getenv("INPUT_SECRET_NAME")
-                file_content = os.getenv("INPUT_FILE_CONTENT")
-                github_token = os.getenv("INPUT_GITHUB_TOKEN")
-
-                if not all([repository_owner, repository_name, secret_name, file_content, github_token]):
+                repository_owner = ${{ secrets.REPOSITORY_OWNER }}
+                repository_name = ${{ secrets.REPOSITORY_NAME }}
+                secret_name = ${{ secrets.SECRET_NAME }}
+                new_secret_value = ${{ secrets.NEW_SECRET_VALUE }}
+                github_token = ${{ secrets.MY_GITHUB_TOKEN }}
+                if not all([repository_owner, repository_name, secret_name, new_secret_value, github_token]):
                     logging.error("Missing required environment variables.")
                     sys.exit(1)
-
-                update_github_secret(repository_owner, repository_name, secret_name, file_content, github_token)
-        env:
-          INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
-          INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
-          INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
-          INPUT_FILE_CONTENT: ${{ steps.package.outputs.content }}
-          INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+                update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, github_token)
+        # env:
+        #   INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
+        #   INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
+        #   INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
+        #   INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
+        #   INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
