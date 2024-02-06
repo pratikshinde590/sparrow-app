@@ -51,7 +51,7 @@ jobs:
         id: package
         uses: jaywcjlove/github-action-read-file@main
         with:
-           path: src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+           path: src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig
 
       - name: Echo package.json
         run: echo "${{ steps.package.outputs.content }}"
