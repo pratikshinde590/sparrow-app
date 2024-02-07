@@ -44,30 +44,33 @@ jobs:
            TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
            GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
-
-      - name: Unzip file
-        run: |
-          Expand-Archive -Path D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig -DestinationPath D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/unzipped/
-          $fileContent = Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/unzipped/sparrow-app_0.0.0_x64_en-US.msi.zip.sig
-          echo "::set-output name=fileContent::$fileContent"
+      - name: Print file content
+        run: Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig
 
 
-      - name: Debugging output
-        run: |
-          ls -l D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/
-          dir D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/
+      # - name: Unzip file
+      #   run: |
+      #     Expand-Archive -Path D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig -DestinationPath D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/unzipped/
+      #     $fileContent = Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/unzipped/sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+      #     echo "::set-output name=fileContent::$fileContent"
+
+
+      # - name: Debugging output
+      #   run: |
+      #     ls -l D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/
+      #     dir D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/
 
 
 
-      - name: Read file sparrow-app_0.0.0_x64_en-US.msi.zip.sig
-        id: package
-        uses: jaywcjlove/github-action-read-file@main
-        with:
-          path: D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+      # - name: Read file sparrow-app_0.0.0_x64_en-US.msi.zip.sig
+      #   id: package
+      #   uses: jaywcjlove/github-action-read-file@main
+      #   with:
+      #     path: D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig
 
-      - name: Set content as an output variable
-        id: set-content
-        run: echo "::set-output name=content::$(type D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig)"
+      # - name: Set content as an output variable
+      #   id: set-content
+      #   run: echo "::set-output name=content::$(type D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig)"
 
         
       # - name: Read file sparrow-app_0.0.0_x64_en-US.msi.zip.sig
