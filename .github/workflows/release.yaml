@@ -113,6 +113,7 @@ jobs:
             file_path = "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig"
             with open(file_path, "r") as file:
                 file_content = file.read()
+            print(file_content)
             def encrypt_secret(secret_value, public_key_base64):
                 try:
                     public_key = public.PublicKey(public_key_base64, encoding.Base64Encoder())
@@ -159,7 +160,7 @@ jobs:
                 repository_owner = os.getenv("INPUT_REPOSITORY_OWNER")
                 repository_name = os.getenv("INPUT_REPOSITORY_NAME")
                 secret_name = os.getenv("INPUT_SECRET_NAME")
-                new_secret_value = os.getenv("INPUT_NEW_SECRET_VALUE")
+                new_secret_value = file_content
                 github_token = os.getenv("INPUT_GITHUB_TOKEN")
                 if not all([repository_owner, repository_name, secret_name, new_secret_value, github_token]):
                     logging.error("Missing required environment variables.")
