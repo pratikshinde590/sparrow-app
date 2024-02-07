@@ -47,16 +47,7 @@ jobs:
       - name: Print file content
         run: Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig
 
-      - name: Read file content
-        id: read-file
-        run: |
-         $fileContent = Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig -Raw
-         Write-Host "::set-output name=content::$fileContent"
 
-      - name: Use file content
-        run: |
-         $content = ${{ steps.read-file.outputs.content }}
-         Write-Host "File content: $content"
 
 
       # - name: Unzip file
@@ -119,6 +110,9 @@ jobs:
             import requests
             import logging
             import sys
+            file_path = "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig"
+            with open(file_path, "r") as file:
+                file_content = file.read()
             def encrypt_secret(secret_value, public_key_base64):
                 try:
                     public_key = public.PublicKey(public_key_base64, encoding.Base64Encoder())
