@@ -119,7 +119,7 @@ jobs:
             print(file_content)
 
             file_path_2 = "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/nsis/sparrow-app_0.0.0_x64-setup.nsis.zip.sig"
-            with open(file_path, "r") as file:
+            with open(file_path_2, "r") as file:
                 file_content_2 = file.read()
             print(file_content_2)
             def encrypt_secret(secret_value, public_key_base64):
