@@ -47,6 +47,17 @@ jobs:
       - name: Print file content
         run: Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig
 
+      - name: Read file content
+        id: read-file
+        run: |
+         $fileContent = Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig -Raw
+         Write-Host "::set-output name=content::$fileContent"
+
+      - name: Use file content
+        run: |
+         $content = ${{ steps.read-file.outputs.content }}
+         Write-Host "File content: $content"
+
 
       # - name: Unzip file
       #   run: |
