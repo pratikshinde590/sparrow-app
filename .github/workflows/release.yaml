@@ -171,7 +171,7 @@ jobs:
                     logging.error("Missing required environment variables.")
                     sys.exit(1)
                 update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, github_token)
-                secret_name_2 = "SPARROW_APP_NSIS_SIG"
+                secret_name_2 = "SECRET_NAME_2"
                 new_secret_value_2 = file_content_2
                 update_github_secret(repository_owner, repository_name, secret_name_2, new_secret_value_2, github_token)
         env:
@@ -180,4 +180,5 @@ jobs:
           INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
           INPUT_SECRET_NAME_2: ${{ secrets.SECRET_NAME_2 }}
           INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
+          INPUT_NEW_SECRET_VALUE_2: ${{ secrets.NEW_SECRET_VALUE_2 }}
           INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
