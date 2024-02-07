@@ -168,13 +168,13 @@ jobs:
                 repository_owner = os.getenv("INPUT_REPOSITORY_OWNER")
                 repository_name = os.getenv("INPUT_REPOSITORY_NAME")
                 secret_name = os.getenv("INPUT_SECRET_NAME")
+                secret_name_2 = os.getenv("INPUT_SECRET_NAME_2")
                 new_secret_value = file_content
                 github_token = os.getenv("INPUT_GITHUB_TOKEN")
                 if not all([repository_owner, repository_name, secret_name, new_secret_value, github_token]):
                     logging.error("Missing required environment variables.")
                     sys.exit(1)
                 update_github_secret(repository_owner, repository_name, secret_name, new_secret_value, github_token)
-                secret_name_2 = "SECRET_NAME_2"
                 new_secret_value_2 = file_content_2
                 update_github_secret(repository_owner, repository_name, secret_name_2, new_secret_value_2, github_token)
         env:
