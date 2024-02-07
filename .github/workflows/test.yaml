@@ -16,13 +16,13 @@ jobs:
 
     - name: Set up secret file
       env:
-        DEBUG_PASSWORD: ${{ secrets.TAURI_PRIVATE_KEY }}
+        DEBUG_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
       run: |
         echo $DEBUG_PASSWORD >> secrets.txt
 
     - name: Set env as secret
       env:
-        MY_VAL: ${{ secrets.TAURI_PRIVATE_KEY }}
+        MY_VAL: ${{ secrets.TAURI_KEY_PASSWORD }}
       run: |
         import os
         for q in (os.getenv("MY_VAL")):
