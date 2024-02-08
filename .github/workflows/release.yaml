@@ -51,17 +51,10 @@ jobs:
         run: Get-Content D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\nsis\sparrow-app_1.0.0_x64-setup.nsis.zip.sig
 
 
-      - name: Fetch Version from tauri.conf.json
+      - name: Fetch Version from package.json
         id: fetch-version
-        run: echo "::set-output name=version::$(jq -r '.package.version' src-tauri/tauri.conf.json)"
-      
-            
-      # - name: Rename .exe file with version
-      #   run: mv D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/nsis/sparrow-app_0.0.0_x64-setup.exe "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/nsis/sparrow-app_${{ steps.fetch-version.outputs.version }}_x64-setup.exe"
-
-      # - name: Rename .msi file with version
-      #   run: mv D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_${{ steps.fetch-version.outputs.version }}_x64_en-US.msi"
-    
+        run: echo "::set-output name=version::$(jq -r .version package.json)"
+        
 
       - name: Semantic Release
         run: npx semantic-release
