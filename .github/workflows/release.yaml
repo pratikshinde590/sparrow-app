@@ -53,7 +53,7 @@ jobs:
 
       - name: Fetch Version from tauri.conf.json
         id: fetch-version
-        run: echo "::set-output name=version::$(jq -r '.package.version' sparrow-app/src-tauri/tauri.conf.json)"
+        run: echo "::set-output name=version::$(jq -r '.package.version' src-tauri/tauri.conf.json)"
       
             
       # - name: Rename .exe file with version
