@@ -45,19 +45,28 @@ jobs:
            GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
       - name: Print file content
-        run: Get-Content D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_1.0.0_x64_en-US.msi.zip.sig
+        run: Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig
 
       - name: Print file content
-        run: Get-Content D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\nsis\sparrow-app_1.0.0_x64-setup.nsis.zip.sig
+        run: Get-Content D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/nsis/sparrow-app_0.0.0_x64-setup.nsis.zip.sig
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+   
+      - name: Install Dependencies
+        run: |
+           pip install PyNaCl requests
 
-      - name: Fetch Version from package.json
-        id: fetch-version
-        run: echo "::set-output name=version::$(jq -r .version package.json)"
-        
-
-      - name: Semantic Release
-        run: npx semantic-release
+      - name: Run Python Script
+        run: python script.py  # This command runs your Python script
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          
+          INPUT_REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
+          INPUT_REPOSITORY_NAME: ${{ secrets.REPOSITORY_NAME }}
+          INPUT_SECRET_NAME: ${{ secrets.SECRET_NAME }}
+          INPUT_SECRET_NAME_2: ${{ secrets.SECRET_NAME_2 }}
+          INPUT_NEW_SECRET_VALUE: ${{ secrets.NEW_SECRET_VALUE }}
+          INPUT_NEW_SECRET_VALUE_2: ${{ secrets.NEW_SECRET_VALUE_2 }}
+          INPUT_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        
