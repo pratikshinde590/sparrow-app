@@ -1,0 +1,17 @@
+name: My Workflow
+
+on:
+  push:
+    branches:
+      - main  # Adjust branch as needed
+
+jobs:
+  run_script:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2  # This action checks out your repository's code
+
+    - name: Run Python Script
+      run: python script.py  # This command runs your Python script
