@@ -13,5 +13,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2  # This action checks out your repository's code
 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+          python-version: 3.x
+   
+    - name: Install Dependencies
+      run: |
+           pip install PyNaCl requests
+
     - name: Run Python Script
       run: python script.py  # This command runs your Python script
