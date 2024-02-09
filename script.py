@@ -4,12 +4,12 @@ from nacl import encoding, public, secret
 import requests
 import logging
 import sys
-file_path = "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_0.0.0_x64_en-US.msi.zip.sig"
+file_path = "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_1.0.0_x64_en-US.msi.zip.sig"
 with open(file_path, "r") as file:
     file_content = file.read()
 print(file_content)
 
-file_path_2 = "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/nsis/sparrow-app_0.0.0_x64-setup.nsis.zip.sig"
+file_path_2 = "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\nsis\sparrow-app_1.0.0_x64-setup.nsis.zip.sig"
 with open(file_path_2, "r") as file:
     file_content_2 = file.read()
 print(file_content_2)
