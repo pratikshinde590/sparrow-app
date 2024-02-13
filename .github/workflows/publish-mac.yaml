@@ -37,28 +37,30 @@ jobs:
 
     - name: Build Tauri App
       run: |
+        TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
+        TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
         APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
         APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
         APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" yarn tauri build --debug
+      
+      env:
+           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
-    # - name: Archive and Sign App
-    #   run: |
-    #     zip -r sparrow-app.app.zip target/release/sparrow-app.app
-    #     codesign --force --verify --verbose --sign "$APPLE_SIGNING_IDENTITY" target/release/YourAppName.app
 
     - name: Archive
       run: |
-        #zip -r sparrow.app.zip /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/sparrow-app.app
-        #codesign --force --verify --verbose --sign "$APPLE_SIGNING_IDENTITY" target/debug/bundle/macos/sparrow-app.app
         zip -r sparrow-app_1.0.0_x64.dmg /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg
 
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: sparrow-macos
-        path: |
-          sparrow.app.zip
-          sparrow-app_1.0.0_x64.dmg
+    - name: Fetch Version from package.json
+      id: fetch-version
+      run: echo "::set-output name=version::$(jq -r .version package.json)"
+
+    - name: Semantic Release
+      run: npx semantic-release
+      env:
+        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
 
     
