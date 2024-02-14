@@ -1,4 +1,4 @@
-name: Combined Build and Semantic Release
+name: windows
 
 on:
   push:
@@ -6,55 +6,61 @@ on:
       - main
 
 env: 
-  VITE_API_URL: ${{secrets.VITE_API_URL}}
-  VITE_MIX_PANEL_TOKEN: ${{secrets.VITE_MIX_PANEL_TOKEN}}
-  VITE_ENABLE_MIX_PANEL: ${{secrets.VITE_ENABLE_MIX_PANEL}}
-  VITE_API_TIMEOUT: ${{secrets.VITE_API_TIMEOUT}}
+ VITE_API_URL: ${{secrets.VITE_API_URL}}
+ VITE_MIX_PANEL_TOKEN: ${{secrets.VITE_MIX_PANEL_TOKEN}}
+ VITE_ENABLE_MIX_PANEL: ${{secrets.VITE_ENABLE_MIX_PANEL}}
+ VITE_API_TIMEOUT: ${{secrets.VITE_API_TIMEOUT}}
 
 jobs:
-  build_and_release:
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest]
+  release:
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Rust setup
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Sync node version and setup cache
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: '20'
+          node-version: '20.8'
 
+      - name: Install Windows SDK
+        run: Invoke-WebRequest -Uri https://aka.ms/winsdk/10/latest/SdkSetup.exe -OutFile $env:TEMP\SdkSetup.exe
+        shell: powershell
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1
+
+      - name: Install dependencies
+        run: |
+            yarn cache clean
+            npm install -g pnpm
+            # pnpm install
+            yarn install
+            # yarn tauri build --debug
       - name: Build Tauri App
         run: |
-          if [ ${{ matrix.os }} == 'macos-latest' ]; then
-            TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-            TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
-            APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
-            APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
-            APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" 
-            yarn install
-            yarn tauri build --debug
-          else
             $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
             $TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
-            yarn install
             yarn tauri build --debug
-          fi
         env:
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          
+           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      # - name: Print file content
+      #   run: Get-Content D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_1.0.0_x64_en-US.msi.zip.sig
+
+      # - name: Print file content
+      #   run: Get-Content D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\nsis\sparrow-app_1.0.0_x64-setup.nsis.zip.sig
+
+
       - name: Fetch Version from package.json
         id: fetch-version
         run: echo "::set-output name=version::$(jq -r .version package.json)"
+        
 
       - name: Semantic Release
         run: npx semantic-release
