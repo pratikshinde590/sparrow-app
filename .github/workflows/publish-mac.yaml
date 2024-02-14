@@ -12,12 +12,9 @@ env:
   VITE_API_TIMEOUT: ${{secrets.VITE_API_TIMEOUT}}
 
 jobs:
-  build_and_release:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest]
-
+  build_and_release_macos:
+    runs-on: macos-latest
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -28,14 +25,9 @@ jobs:
       - name: Sync node version and setup cache
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '20.8'
 
-      # - name: Install Dependencies
-      #   run: |
-      #     yarn install
-
-      - name: Build Tauri App on MacOS
-        if: runner.os == 'macos-latest'
+      - name: Build Tauri App
         run: |
           TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
           TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
@@ -48,9 +40,38 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          
+      # - name: Fetch Version from package.json
+      #   id: fetch-version
+      #   run: echo "::set-output name=version::$(jq -r .version package.json)"
 
-      - name: Build Tauri App on Windows
-        if: runner.os == 'windows-latest'
+      - name: Semantic Release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+  build_and_release_windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.8'
+
+      - name: Install Windows SDK
+        run: Invoke-WebRequest -Uri https://aka.ms/winsdk/10/latest/SdkSetup.exe -OutFile $env:TEMP\SdkSetup.exe
+        shell: powershell
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1
+
+      - name: Build Tauri App
         run: |
           $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
           $TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
@@ -60,19 +81,7 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-
-      # - name: Archive
-      #   if: runner.os == 'macOS' # Adjust path based on OS
-      #   run: |
-      #     zip -r sparrow-app_1.0.0_x64.dmg /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg
-
-      # - name: Archive
-      #   if: runner.os == 'Windows' # Adjust path based on OS
-      #   run: |
-      #     # Adjust the path for Windows
-      #     # For example:
-      #     # zip -r sparrow-app_1.0.0_x64.zip C:\path\to\your\app.exe
-
+          
       - name: Fetch Version from package.json
         id: fetch-version
         run: echo "::set-output name=version::$(jq -r .version package.json)"
