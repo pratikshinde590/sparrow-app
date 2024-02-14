@@ -1,4 +1,4 @@
-name: Combined Build and Semantic Release
+name: mac-os-release
 
 on:
   push:
@@ -41,19 +41,8 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
-      # - name: Archive
-      #   run: |
-      #    zip -r sparrow-app_0.0.0_x64.dmg /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-         name: sparrow-macos
-         path: |
-          /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v2
-        with:
-         name: sparrow-macos  # Replace with the name of your artifact
-         path: dist
+      - name: Semantic Release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
           
