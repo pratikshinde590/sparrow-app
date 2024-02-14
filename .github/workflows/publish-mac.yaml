@@ -45,10 +45,10 @@ jobs:
       #   id: fetch-version
       #   run: echo "::set-output name=version::$(jq -r .version package.json)"
 
-      - name: Semantic Release
-        run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+      # - name: Semantic Release
+      #   run: npx semantic-release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
   build_and_release_windows:
     runs-on: windows-latest
