@@ -41,45 +41,14 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
-  build_and_release_windows:
-    runs-on: windows-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20.8'
-
-      - name: Install Windows SDK
-        run: Invoke-WebRequest -Uri https://aka.ms/winsdk/10/latest/SdkSetup.exe -OutFile $env:TEMP\SdkSetup.exe
-        shell: powershell
-
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1
-
-      - name: Build Tauri App
+      - name: Archive
         run: |
-          $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-          $TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
-          yarn cache clean
-          npm install -g pnpm
-          yarn install
-          yarn tauri build --debug
-        env:
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          
-      - name: Fetch Version from package.json
-        id: fetch-version
-        run: echo "::set-output name=version::$(jq -r .version package.json)"
+         zip -r sparrow-app_0.0.0_x64.dmg /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg
 
-      - name: Semantic Release
-        run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+         name: sparrow-macos
+         path: |
+          sparrow.app.zip
+          sparrow-app_1.0.0_x64.dmg
