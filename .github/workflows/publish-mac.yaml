@@ -46,8 +46,8 @@ jobs:
       #    zip -r sparrow-app_0.0.0_x64.dmg /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg
 
       - name: Copy artifact to dist/asset folder
-        run: |
-         cp /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg dist/asset/
+        run: cp /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg dist/asset/
+
 
       # - name: Upload Artifacts
       #   uses: actions/upload-artifact@v2
