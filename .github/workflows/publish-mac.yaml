@@ -1,4 +1,4 @@
-name: Mac Build
+name: Combined Build and Semantic Release
 
 on:
   push:
@@ -6,64 +6,78 @@ on:
       - main
 
 env: 
- VITE_API_URL: ${{secrets.VITE_API_URL}}
- VITE_MIX_PANEL_TOKEN: ${{secrets.VITE_MIX_PANEL_TOKEN}}
- VITE_ENABLE_MIX_PANEL: ${{secrets.VITE_ENABLE_MIX_PANEL}}
- VITE_API_TIMEOUT: ${{secrets.VITE_API_TIMEOUT}}
-
+  VITE_API_URL: ${{secrets.VITE_API_URL}}
+  VITE_MIX_PANEL_TOKEN: ${{secrets.VITE_MIX_PANEL_TOKEN}}
+  VITE_ENABLE_MIX_PANEL: ${{secrets.VITE_ENABLE_MIX_PANEL}}
+  VITE_API_TIMEOUT: ${{secrets.VITE_API_TIMEOUT}}
 
 jobs:
-  build_and_sign:
-    runs-on: macos-latest
- 
+  build_and_release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-    - name: Rust setup
-      uses: dtolnay/rust-toolchain@stable
+      - name: Rust setup
+        uses: dtolnay/rust-toolchain@stable
 
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
-    - name: Sync node version and setup cache
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        #cache: 'yarn' # Set this to npm, yarn or pnpm.
+      # - name: Install Dependencies
+      #   run: |
+      #     yarn install
 
-    - name: Install Dependencies
-      run: |
-        yarn install
-        # yarn tauri build --debug
+      - name: Build Tauri App on MacOS
+        if: runner.os == 'macos-latest'
+        run: |
+          TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
+          TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
+          APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
+          APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
+          APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" 
+          yarn install
+          yarn tauri build --debug
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
-    - name: Build Tauri App
-      run: |
-        TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-        TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
-        APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
-        APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
-        APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" yarn tauri build --debug
-      
-      env:
-           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+      - name: Build Tauri App on Windows
+        if: runner.os == 'windows-latest'
+        run: |
+          $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
+          $TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
+          yarn install
+          yarn tauri build --debug
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
+      # - name: Archive
+      #   if: runner.os == 'macOS' # Adjust path based on OS
+      #   run: |
+      #     zip -r sparrow-app_1.0.0_x64.dmg /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg
 
-    - name: Archive
-      run: |
-        zip -r sparrow-app_1.0.0_x64.dmg /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg
+      # - name: Archive
+      #   if: runner.os == 'Windows' # Adjust path based on OS
+      #   run: |
+      #     # Adjust the path for Windows
+      #     # For example:
+      #     # zip -r sparrow-app_1.0.0_x64.zip C:\path\to\your\app.exe
 
-    - name: Fetch Version from package.json
-      id: fetch-version
-      run: echo "::set-output name=version::$(jq -r .version package.json)"
+      - name: Fetch Version from package.json
+        id: fetch-version
+        run: echo "::set-output name=version::$(jq -r .version package.json)"
 
-    - name: Semantic Release
-      run: npx semantic-release
-      env:
-        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-
-
-    
-
-
-
+      - name: Semantic Release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
