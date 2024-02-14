@@ -50,4 +50,10 @@ jobs:
          name: sparrow-macos
          path: |
           /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+         name: sparrow-macos  # Replace with the name of your artifact
+         path: dist
           
