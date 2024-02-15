@@ -94,8 +94,8 @@
         {
           "assets": [
             {
-              "path": "/Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg",
-              "label": "sparrow-app_1.0.0_x64.dmg"
+              "path": "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/file.dmg",
+              "label": "sparrow-app.dmg"
             },
             {
               "path": "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/nsis/*.exe",
