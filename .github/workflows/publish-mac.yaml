@@ -42,12 +42,21 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
-      - name: Move MSI file to root directory
-        run: mv /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg sparrow-app_1.0.0_x64.dmg
-
-
-      - name: Semantic Release
-        run: npx semantic-release
+      - name: Upload MSI file to Azure Blob Storage
+        run: |
+          az storage blob upload --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --file /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg --name file.dmg
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+          AZURE_CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME }}
+
+
+      # - name: Move MSI file to root directory
+      #   run: mv /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg sparrow-app_1.0.0_x64.dmg
+
+
+      # - name: Semantic Release
+      #   run: npx semantic-release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
           
