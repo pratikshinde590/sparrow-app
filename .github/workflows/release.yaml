@@ -52,7 +52,7 @@ jobs:
 
       - name: Download dmg file from Azure Blob Storage
         run: |
-          az storage blob download --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --name file.msi --file D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\file.dmg
+          az storage blob download --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --name file.dmg --file D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\file.dmg
         env:
           AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
           AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
