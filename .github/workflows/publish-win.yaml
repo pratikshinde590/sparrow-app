@@ -1,26 +1,96 @@
-name: Widows Build
+name: App center Release
 
 on:
   pull_request:
     branches:
       - main
-env: 
- VITE_API_URL: ${{secrets.VITE_API_URL}}
- VITE_MIX_PANEL_TOKEN: ${{secrets.VITE_MIX_PANEL_TOKEN}}
- VITE_ENABLE_MIX_PANEL: ${{secrets.VITE_ENABLE_MIX_PANEL}}
- 
-jobs:
-  deploy:
-    runs-on: windows-latest
 
+env: 
+  VITE_API_URL: ${{secrets.VITE_API_URL}}
+  VITE_MIX_PANEL_TOKEN: ${{secrets.VITE_MIX_PANEL_TOKEN}}
+  VITE_ENABLE_MIX_PANEL: ${{secrets.VITE_ENABLE_MIX_PANEL}}
+  VITE_API_TIMEOUT: ${{secrets.VITE_API_TIMEOUT}}
+
+jobs:
+  build_and_release_macos:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Rust setup
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.8'
+
+      - name: Build Tauri App
+        run: |
+          TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
+          TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
+          APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
+          APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
+          APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" 
+          yarn install
+          yarn tauri build --debug
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      - name: dmg sig
+        run: cat /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/sparrow-app.app.tar.gz.sig
+          
+
+      # - name: Upload mac-build to Azure Blob Storage
+      #   run: |
+      #     az storage blob upload --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --file /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg --name sparrow-app_1.0.0_x64.dmg
+      #     az storage blob upload --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --file /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/sparrow-app.app.tar.gz --name sparrow-app.app.tar.gz
+      #   env:
+      #     AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+      #     AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+      #     AZURE_CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME }}
+
+      - name: Install App Center CLI
+        run: |
+          npm install -g appcenter-cli@latest
+  
+      - name: Upload to App Center
+        run: |
+          appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
+          appcenter distribute release -f /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.0.0_x64.dmg -g Collaborators --app sparrow-app --build-version v12.23.${{ github.run_number }} --build-number ${{ github.run_number }}
+  
+      - name: status check and upload
+        uses: neonidian/teams-notify-build-status@v3
+        if: always()
+        with:
+          webhookUrl: |
+            ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
+          message: |
+            🚀 **Build Status Update** 🚀
+  
+            The workflow (sparrow-app for **Mac**) has completed with status: **${{ job.status }}**.
+  
+            👉 Check it out latest release here [AppCenter](https://appcenter.ms/users/techdome/apps/Sparrow-1)!
+          titleBackgroundColor: ${{ job.status }}
+        env:
+          SHOULD_DISPLAY_VIEW_COMMIT_BUTTON: true
+
+
+  build_and_release_windows:
+    runs-on: windows-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18.x
+          node-version: '20.8'
 
       - name: Install Windows SDK
         run: Invoke-WebRequest -Uri https://aka.ms/winsdk/10/latest/SdkSetup.exe -OutFile $env:TEMP\SdkSetup.exe
@@ -30,11 +100,25 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1
- 
-      - name: Install dependencies
+
+      - name: Build Tauri App
         run: |
+          $TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
+          $TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
+          yarn cache clean
+          npm install -g pnpm
           yarn install
           yarn tauri build --debug
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      - name: msi sig
+        run: Get-Content D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_1.0.0_x64_en-US.msi.zip.sig
+  
+      - name: nsis sig
+        run: Get-Content D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\nsis\sparrow-app_1.0.0_x64-setup.nsis.zip.sig
 
       - name: sign msi
         run: |
@@ -57,7 +141,7 @@ jobs:
       - name: Upload to App Center
         run: |
           appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
-          appcenter distribute release -f D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\Sparrow-app_1.0.0_x64_en-US.msi -g Collaborators --app Techdome/Sparrow --build-version v11.23.${{ github.run_number }}
+          appcenter distribute release -f D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_1.0.0_x64_en-US.msi -g Collaborators --app sparrow-app --build-version v11.23.${{ github.run_number }}
 
       - name: status check and upload
         uses: neonidian/teams-notify-build-status@v3
@@ -74,3 +158,24 @@ jobs:
           titleBackgroundColor: ${{ job.status }}
         env:
           SHOULD_DISPLAY_VIEW_COMMIT_BUTTON: true
+
+      # - name: Download dmg file from Azure Blob Storage
+      #   run: |
+      #      az storage blob download --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --name sparrow-app_1.0.0_x64.dmg --file D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_1.0.0_x64.dmg
+      #      az storage blob download --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --name sparrow-app.app.tar.gz --file D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app.app.tar.gz
+
+        # env:
+        #   AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+        #   AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+        #   AZURE_CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME }}
+
+
+          
+      # - name: Fetch Version from package.json
+      #   id: fetch-version
+      #   run: echo "::set-output name=version::$(jq -r .version package.json)"
+
+      # - name: Semantic Release
+      #   run: npx semantic-release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
