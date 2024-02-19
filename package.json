@@ -104,6 +104,18 @@
             {
               "path": "D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/*.msi",
               "label": "sparrow.msi"
+            },
+            {
+              "path": "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_1.0.0_x64_en-US.msi.zip",
+              "label": "sparrow.msi.zip(updater)"
+            },
+            {
+              "path": "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\nsis\sparrow-app_1.0.0_x64-setup.nsis.zip",
+              "label": "sparrow.nsis.zip(updater)"
+            },
+            {
+              "path": "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app.app.tar.gz",
+              "label": "sparrow.tar.gz(updater)"
             }
           ]
         }
