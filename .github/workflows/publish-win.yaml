@@ -69,12 +69,8 @@ jobs:
       
       - name: Upload to App Center
         run: |
-          appcenter distribute release \
-            -f D:/a/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/msi/sparrow-app_1.0.0_x64_en-US.msi \
-            -g Collaborators \
-            --app Sparrow \
-            --build-version v12.23.${{ github.run_number }} \
-            --build-number ${{ github.run_number }}
+          appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
+          appcenter distribute release -f D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_1.0.0_x64_en-US.msi -g Collaborators --app Techdome/Sparrow --build-version v11.23.${{ github.run_number }}
 
       - name: status check and upload
         uses: neonidian/teams-notify-build-status@v3
