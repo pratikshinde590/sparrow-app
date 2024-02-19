@@ -3,7 +3,7 @@ name: Widows Build
 on:
   pull_request:
     branches:
-      - pratik-release
+      - main
 env: 
  VITE_API_URL: ${{secrets.VITE_API_URL}}
  VITE_MIX_PANEL_TOKEN: ${{secrets.VITE_MIX_PANEL_TOKEN}}
