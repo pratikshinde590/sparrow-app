@@ -45,7 +45,7 @@ jobs:
         env:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.PR_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
       - name: msi sig
         run: Get-Content D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi.zip.sig
@@ -67,14 +67,24 @@ jobs:
       - name: Log in to App Center
         run: appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
       
-      - name: Get PR Details
-        id: pr_details
-        run: echo "::set-output name=title::$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH | sed 's/"/\\"/g')"
+      - name: Get PR Title
+        id: get_pr_title
+        run: |
+          PR_TITLE=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_GITHUB_TOKEN }}" \
+                      "${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+                      | jq -r '.title')
+          echo "::set-output name=title::$PR_TITLE"
       
       - name: Upload to App Center
         run: |
           appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
-          appcenter distribute release -f D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi -g Collaborators --app techdome/Sparrow --build-version v11.23.${{ github.run_number }} --release-notes "${{ steps.pr_details.outputs.title }}"
+          appcenter distribute release -f D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi -g Collaborators --app techdome/Sparrow --build-version "${{ github.event.pull_request.title }}" --release-notes "${{ steps.get_pr_title.outputs.title }}"
+
+      
+      # - name: Upload to App Center
+      #   run: |
+      #     appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
+      #     appcenter distribute release -f D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi -g Collaborators --app techdome/Sparrow --build-version v11.23.${{ github.run_number }} --release-notes "${{ steps.pr_details.outputs.title }}"
       
       - name: status check and upload
         uses: neonidian/teams-notify-build-status@v3
@@ -117,19 +127,19 @@ jobs:
         env:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.PR_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
       - name: Install App Center CLI
         run: |
           npm install -g appcenter-cli@latest
           
-      - name: Get PR Details
-        id: pr_details
-        run: echo "::set-output name=title::$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH | sed 's/"/\\"/g')"
+      # - name: Get PR Details
+      #   id: pr_details
+      #   run: echo "::set-output name=title::$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH | sed 's/"/\\"/g')"
       
-      - name: Upload to App Center
-        run: |
-          appcenter distribute release -f /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_0.0.0_x64.dmg -g Collaborators --app techdome/Sparrow-1 --build-version v12.23.${{ github.run_number }} --build-number ${{ github.run_number }} --release-notes "${{ steps.pr_details.outputs.title }}"
+      # - name: Upload to App Center
+      #   run: |
+      #     appcenter distribute release -f /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_0.0.0_x64.dmg -g Collaborators --app techdome/Sparrow-1 --build-version v12.23.${{ github.run_number }} --build-number ${{ github.run_number }} --release-notes "${{ steps.pr_details.outputs.title }}"
           
       - name: status check and upload
         uses: neonidian/teams-notify-build-status@v3
