@@ -133,9 +133,6 @@ jobs:
         run: |
           npm install -g appcenter-cli@latest
           
-      # - name: Get PR Details
-      #   id: pr_details
-      #   run: echo "::set-output name=title::$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH | sed 's/"/\\"/g')"
       
       # - name: Upload to App Center
       #   run: |
