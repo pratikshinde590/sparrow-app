@@ -73,6 +73,7 @@ jobs:
       
       - name: Upload to App Center
         run: |
+          appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
           appcenter distribute release -f D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi -g Collaborators --app techdome/Sparrow --build-version v11.23.${{ github.run_number }} --release-notes "${{ steps.pr_details.outputs.title }}"
       
       - name: status check and upload
