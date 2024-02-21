@@ -129,12 +129,16 @@ jobs:
         run: |
           npm install -g appcenter-cli@latest
 
+      - name: Log in to App Center
+        run: appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
+
       - name: Get PR Branch Name
         id: pr_branch
         run: echo "::set-output name=branch::$(echo ${{ github.head_ref }})"
         
       - name: Upload to App Center
         run: |
+            appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
             branch_name="${{ steps.pr_branch.outputs.branch }}"
             echo "Branch Name: $branch_name"
             appcenter distribute release -f D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_0.0.0_x64_en-US.msi -g Collaborators --app techdome/Sparrow --build-version "${branch_name}"
