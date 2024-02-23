@@ -69,7 +69,7 @@ jobs:
 
       - name: Get PR Branch Name
         id: pr_branch
-        run: echo "::set-output name=branch::$(echo ${{ github.head_ref }})"
+        run: echo "::set-output name=branch::${{ github.head_ref }}"
       
       - name: Upload to App Center
         run: |
