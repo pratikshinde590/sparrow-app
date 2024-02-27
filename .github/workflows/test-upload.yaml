@@ -17,6 +17,6 @@ jobs:
       uses: exuanbo/actions-deploy-gist@v1
       with:
         token: ${{ secrets.MY_GITHUB_TOKEN }}
-        gist_id: f0eb95cb30612f6e9ac3e83057f0c920
-        file_path: sparrow-app_1.0.0_x64-setup.exe
+        gist_id: 25ea6d20d8b2874b96f1588fb410fea5
+        file_path: src-tauri/src/sparrow-app_0.0.0_x64-setup.exe
         file_type: .exe file
