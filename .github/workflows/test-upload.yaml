@@ -1,0 +1,51 @@
+name: Test MSI Upload
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test_upload:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Install App Center CLI
+      run: |
+       npm install -g appcenter-cli@latest
+
+    - name: Get PR Branch Name
+      id: pr_branch
+      run: echo "::set-output name=branch::${{ github.head_ref }}"
+      
+    - name: var
+      run: |
+        $branch_name = "${{ steps.pr_branch.outputs.branch }}"
+        echo "Branch Name: $branch_name"
+      
+    - name: Log in to App Center
+      run: appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
+    
+    - name: Upload to App Center
+      shell: bash
+      run: |
+        echo "Testing MSI upload..."
+        echo "Creating a dummy MSI file..."
+        # Create a dummy MSI file for testing
+        echo "Dummy MSI file" > dummy.msi
+        
+        # Use wildcard to select the MSI file
+        msi_file=$(dir /B /S *.msi)
+        echo "MSI File: $msi_file"
+        
+        # Replace this line with your actual appcenter command
+        echo "Uploading MSI file to App Center..."
+        
+        # Example command (replace this with your actual command)
+        # appcenter distribute release -f "$msi_file" -g Collaborators --app techdome/Sparrow --build-version "branch-$branch_name" --build-number ${{ github.run_number }}
+        
+        # Clean up: Remove the dummy MSI file
+        rm dummy.msi
