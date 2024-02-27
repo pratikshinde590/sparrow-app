@@ -18,5 +18,5 @@ jobs:
       with:
         token: ${{ secrets.MY_GITHUB_TOKEN }}
         gist_id: 17df64be33ce8cc2797c61a6f428a8b1
-        file_path: src-tauri/src/*.exe  # Path to the file in the root directory
+        file_path: /*.exe
         file_type: .exe file
