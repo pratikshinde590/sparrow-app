@@ -1,3 +1,11 @@
+# [1.1.0](https://github.com/pratikshinde590/sparrow-app/compare/v1.0.0...v1.1.0) (2024-03-01)
+
+
+### Features
+
+* delete pr-release.yaml file[] ([c187a06](https://github.com/pratikshinde590/sparrow-app/commit/c187a062869107d2d2c0a1d94e60fd46e78ad7a7))
+* pr-release[] ([c10c333](https://github.com/pratikshinde590/sparrow-app/commit/c10c3331d3a64e73c028caad0da7daaaa7444e50))
+
 # 1.0.0 (2024-02-19)
 
 
