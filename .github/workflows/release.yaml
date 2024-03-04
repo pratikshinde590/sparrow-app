@@ -47,14 +47,13 @@ jobs:
       - name: dmg sig
         run: cat /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/*.sig
 
-      - name: Upload mac-build to Azure Blob Storage
-        run: |
-          az storage blob upload --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --file /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/sparrow-app_1.1.0_x64.dmg --name sparrow-app_1.1.0_x64.dmg --overwrite
-          az storage blob upload --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --file /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/sparrow-app.app.tar.gz --name sparrow-app.app.tar.gz --overwrite
-        env:
-          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
-          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
-          AZURE_CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME }}
+      - name: Upload to S3
+        uses: shallwefootball/s3-upload-action@master
+        with:
+          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_bucket: ${{ secrets.AWS_BUCKET }}
+          source_dir: '/Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle'
 
 
   build_and_release_windows:
@@ -106,22 +105,21 @@ jobs:
            & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\SignTool.exe" sign /f "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\Certificate.pfx" /p sparrow123 /tr http://timestamp.digicert.com /td sha256 /fd sha256 /v "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\*.msi"
 
 
-      - name: Download dmg file from Azure Blob Storage
-        run: |
-           az storage blob download --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --name sparrow-app_1.1.0_x64.dmg --file D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app_1.1.0_x64.dmg --overwrite
-           az storage blob download --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --name sparrow-app.app.tar.gz --file D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\sparrow-app.app.tar.gz --overwrite
-        env:
-          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
-          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
-          AZURE_CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME }}
+      - name: Upload to S3
+        uses: shallwefootball/s3-upload-action@master
+        with:
+          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_bucket: ${{ secrets.AWS_BUCKET }}
+          source_dir: 'D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi'
 
 
           
-      - name: Fetch Version from package.json
-        id: fetch-version
-        run: echo "::set-output name=version::$(jq -r .version package.json)"
+      # - name: Fetch Version from package.json
+      #   id: fetch-version
+      #   run: echo "::set-output name=version::$(jq -r .version package.json)"
 
-      - name: Semantic Release
-        run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+      # - name: Semantic Release
+      #   run: npx semantic-release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
