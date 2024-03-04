@@ -18,12 +18,11 @@ jobs:
       #     sudo apt-get install -y awscli
 
       - name: Install AWS CLI
-        id: install-aws-cli
-        uses: unfor19/install-aws-cli-action@v1
+        uses: chrislennon/action-aws-cli@v1.1
         with:
-          version: 2
-          verbose: false
-          arch: amd64
+          version: latest
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Upload files to S3
         run: |
