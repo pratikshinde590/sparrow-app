@@ -13,6 +13,7 @@ env:
   VITE_SPARROW_SUPPORT_EMAIL: ${{ secrets.VITE_SPARROW_SUPPORT_EMAIL }}
   VITE_AUTH_URL: ${{ secrets.VITE_AUTH_URL_DEV }}
   VITE_SPARROW_GITHUB: ${{ secrets.VITE_SPARROW_GITHUB }}
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
   build_and_release_macos:
@@ -47,13 +48,27 @@ jobs:
       - name: dmg sig
         run: cat /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/*.sig
 
-      - name: Upload to S3
-        uses: shallwefootball/s3-upload-action@master
+      # - name: Upload to S3
+      #   uses: shallwefootball/s3-upload-action@master
+      #   with:
+      #     aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws_bucket: ${{ secrets.AWS_BUCKET }}
+      #     source_dir: '/src-tauri/target/debug/bundle/dmg'
+
+      - name: Install AWS CLI
+        uses: chrislennon/action-aws-cli@v1.1
         with:
-          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          version: latest
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_bucket: ${{ secrets.AWS_BUCKET }}
-          source_dir: '/src-tauri/target/debug/bundle/dmg'
+
+      - name: Upload files to S3
+        run: |
+          aws s3 sync /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos s3://sparrow-release-assests
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 
   build_and_release_windows:
@@ -105,13 +120,28 @@ jobs:
            & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\SignTool.exe" sign /f "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\Certificate.pfx" /p sparrow123 /tr http://timestamp.digicert.com /td sha256 /fd sha256 /v "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\*.msi"
 
 
-      - name: Upload to S3
-        uses: shallwefootball/s3-upload-action@master
+      - name: Install AWS CLI
+        uses: chrislennon/action-aws-cli@v1.1
         with:
-          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          version: latest
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_bucket: ${{ secrets.AWS_BUCKET }}
-          source_dir: 'src-tauri\target\debug\bundle\msi'
+
+      - name: Upload files to S3
+        run: |
+          aws s3 sync D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi s3://sparrow-release-assests
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+
+      # - name: Upload to S3
+      #   uses: shallwefootball/s3-upload-action@master
+      #   with:
+      #     aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws_bucket: ${{ secrets.AWS_BUCKET }}
+      #     source_dir: 'src-tauri\target\debug\bundle\msi'
 
 
           
