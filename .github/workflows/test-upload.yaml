@@ -13,13 +13,18 @@ jobs:
         uses: actions/checkout@v2
 
 
-      # - name: Login to Azure
-      #   run: azcopy login
-
-      - name: Upload win updater to Azure Blob Storage
+      - name: Download and install AzCopy
         run: |
-          az storage blob upload --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --file src-tauri/src/*.exe --overwrite
+          wget -O azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
+          tar -xf azcopy.tar.gz --strip-components=1 --wildcards '*/azcopy'
+          sudo mv azcopy /usr/local/bin/
+          rm azcopy.tar.gz
+
+      - name: Login to Azure
+        run: azcopy login --tenant-id 40c986a0-6b01-47a2-bc81-405e7fa011a7
+
+      - name: Copy files to Azure Data Lake Storage Gen2
+        run: |
+          azcopy copy 'src-tauri/src' "${{ secrets.MYSTORAGEACCOUNT }}" --include-pattern '*.exe' --recursive=true
         env:
-          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
-          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
-          AZURE_CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME }}
+          AZCOPY_SPA_CLIENT_SECRET: ${{ secrets.AZCOPY_SPA_CLIENT_SECRET }}
