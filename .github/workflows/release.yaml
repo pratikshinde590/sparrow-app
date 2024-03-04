@@ -16,61 +16,6 @@ env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
-  build_and_release_macos:
-    runs-on: macos-latest
-    
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Rust setup
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Sync node version and setup cache
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20.8'
-
-      - name: Build Tauri App
-        run: |
-          TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-          TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
-          APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
-          APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
-          APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" 
-          yarn install
-          yarn tauri build --debug
-        env:
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-
-      - name: dmg sig
-        run: cat /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/*.sig
-
-      # - name: Upload to S3
-      #   uses: shallwefootball/s3-upload-action@master
-      #   with:
-      #     aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws_bucket: ${{ secrets.AWS_BUCKET }}
-      #     source_dir: '/src-tauri/target/debug/bundle/dmg'
-
-      - name: Install AWS CLI
-        uses: chrislennon/action-aws-cli@v1.1
-        with:
-          version: latest
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: Upload files to S3
-        run: |
-          aws s3 sync /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos s3://sparrow-release-assests
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-
   build_and_release_windows:
     runs-on: windows-latest
     
@@ -135,21 +80,50 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 
-      # - name: Upload to S3
-      #   uses: shallwefootball/s3-upload-action@master
-      #   with:
-      #     aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws_bucket: ${{ secrets.AWS_BUCKET }}
-      #     source_dir: 'src-tauri\target\debug\bundle\msi'
+  build_and_release_macos:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Rust setup
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.8'
+
+      - name: Build Tauri App
+        run: |
+          TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
+          TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
+          APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
+          APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
+          APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" 
+          yarn install
+          yarn tauri build --debug
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      - name: dmg sig
+        run: cat /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/*.sig
 
 
-          
-      # - name: Fetch Version from package.json
-      #   id: fetch-version
-      #   run: echo "::set-output name=version::$(jq -r .version package.json)"
+      - name: Install AWS CLI
+        uses: chrislennon/action-aws-cli@v1.1
+        with:
+          version: latest
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # - name: Semantic Release
-      #   run: npx semantic-release
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+      - name: Upload files to S3
+        run: |
+          aws s3 sync s3://sparrow-release-assests/ /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/ --exclude "*" --include "*.msi"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
