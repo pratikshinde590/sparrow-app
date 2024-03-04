@@ -41,7 +41,7 @@ jobs:
            
 
       - name: Set up AzCopy CLI
-        uses: azure/setup-azcopy@v1
+        uses: actions/setup-azcopy@v1
 
       - name: Login to Azure
         run: azcopy login
