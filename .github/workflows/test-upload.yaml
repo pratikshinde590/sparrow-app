@@ -18,9 +18,12 @@ jobs:
       #     sudo apt-get install -y awscli
 
       - name: Install AWS CLI
-        run: |
-          Invoke-WebRequest -Uri "https://awscli.amazonaws.com/AWSCLIV2.msi" -OutFile "awscliv2.msi"
-          Start-Process msiexec.exe -ArgumentList '/i', 'awscliv2.msi', '/quiet', '/qn', '/norestart' -NoNewWindow -Wait
+        id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2
+          verbose: false
+          arch: amd64
 
       - name: Upload files to S3
         run: |
