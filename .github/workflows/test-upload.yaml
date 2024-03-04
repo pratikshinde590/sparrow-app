@@ -15,10 +15,12 @@ jobs:
 
       - name: Download and install AzCopy
         run: |
-          wget -O azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
-          tar -xf azcopy.tar.gz --strip-components=1 --wildcards '*/azcopy'
-          sudo mv azcopy /usr/local/bin/
-          rm azcopy.tar.gz
+          Invoke-WebRequest -Uri https://aka.ms/downloadazcopy-v10-linux -OutFile azcopy.tar.gz
+          Expand-Archive -Path azcopy.tar.gz -DestinationPath .\azcopy
+          Move-Item -Path .\azcopy\azcopy.exe -Destination C:\Windows\System32\
+          Remove-Item azcopy.tar.gz -Force
+          Remove-Item -Path .\azcopy -Recurse -Force
+
 
       - name: Login to Azure
         run: azcopy login --tenant-id 40c986a0-6b01-47a2-bc81-405e7fa011a7
