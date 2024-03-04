@@ -12,22 +12,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-
-      - name: Download and install AzCopy
+      - name: Upload win updater to Azure Blob Storage
         run: |
-          Invoke-WebRequest -Uri https://aka.ms/downloadazcopy-v10-windows -OutFile azcopy_windows_amd64_10.23.0.zip
-          Expand-Archive -Path azcopy_windows_amd64_10.23.0.zip -DestinationPath .\
-          Remove-Item azcopy_windows_amd64_10.23.0.zip -Force
-
-
-
-
-
-      - name: Login to Azure
-        run: azcopy login --tenant-id 40c986a0-6b01-47a2-bc81-405e7fa011a7
-
-      - name: Copy files to Azure Data Lake Storage Gen2
-        run: |
-          azcopy copy 'src-tauri/src' "${{ secrets.MYSTORAGEACCOUNT }}" --include-pattern '*.exe' --recursive=true
+          az storage blob upload --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --file src-tauri/src/*.zip --overwrite
         env:
-          AZCOPY_SPA_CLIENT_SECRET: ${{ secrets.AZCOPY_SPA_CLIENT_SECRET }}
+          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+          AZURE_CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME }}
+
+
+
+
+      # - name: Download and install AzCopy
+      #   run: |
+      #     Invoke-WebRequest -Uri https://aka.ms/downloadazcopy-v10-windows -OutFile azcopy_windows_amd64_10.23.0.zip
+      #     Expand-Archive -Path azcopy_windows_amd64_10.23.0.zip -DestinationPath .\
+      #     Remove-Item azcopy_windows_amd64_10.23.0.zip -Force
+
+
+      # - name: Copy files to Azure Data Lake Storage Gen2
+      #   run: |
+      #     azcopy copy 'src-tauri/src' "${{ secrets.MYSTORAGEACCOUNT }}" --include-pattern '*.exe' --recursive=true
+      #   env:
+      #     AZCOPY_SPA_CLIENT_SECRET: ${{ secrets.AZCOPY_SPA_CLIENT_SECRET }}
