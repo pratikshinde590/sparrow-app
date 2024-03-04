@@ -18,12 +18,13 @@ jobs:
           sudo installer -pkg AWSCLIV2.pkg -target /
           aws --version
 
-      - name: Create msi_files directory
-        run: |
-          mkdir msi_files
+      # - name: Create msi_files directory
+      #   run: |
+      #     mkdir msi_files
 
       - name: Download MSI files from S3 bucket
         run: |
+          mkdir msi_files
           aws s3 cp s3://sparrow-release-assests/ msi_files/ --recursive --exclude "*" --include "*.msi"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
