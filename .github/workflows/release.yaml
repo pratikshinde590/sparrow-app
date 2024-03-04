@@ -53,7 +53,7 @@ jobs:
           aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
-          source_dir: '/Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg'
+          source_dir: '/src-tauri/target/debug/bundle/dmg'
 
 
   build_and_release_windows:
@@ -111,7 +111,7 @@ jobs:
           aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
-          source_dir: 'D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi'
+          source_dir: 'src-tauri\target\debug\bundle\msi'
 
 
           
