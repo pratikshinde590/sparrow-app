@@ -16,8 +16,10 @@ jobs:
       - name: Login to Azure
         run: azcopy login
 
-      - name: Copy files to Azure Data Lake Storage Gen2
+      - name: Upload win updater to Azure Blob Storage
         run: |
-          azcopy copy 'src-tauri/src/' "${{ secrets.MYSTORAGEACCOUNT }}" --include-pattern '*.exe' --recursive=true
+          az storage blob upload --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --container-name ${{ secrets.AZURE_CONTAINER_NAME }} --file src-tauri/src/*.exe --overwrite
         env:
-          AZCOPY_SPA_CLIENT_SECRET: ${{ secrets.AZCOPY_SPA_CLIENT_SECRET }}
+          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+          AZURE_CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME }}
