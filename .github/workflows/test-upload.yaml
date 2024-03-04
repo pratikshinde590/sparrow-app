@@ -13,8 +13,8 @@ jobs:
         uses: actions/checkout@v2
 
 
-      - name: Login to Azure
-        run: azcopy login
+      # - name: Login to Azure
+      #   run: azcopy login
 
       - name: Upload win updater to Azure Blob Storage
         run: |
