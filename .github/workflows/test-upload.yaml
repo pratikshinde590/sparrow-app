@@ -5,9 +5,12 @@ on:
     branches:
       - main
 
+
 jobs:
   azcopy_job:
     runs-on: windows-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
