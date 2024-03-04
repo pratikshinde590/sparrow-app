@@ -16,59 +16,6 @@ env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
-  build_and_release_macos:
-    runs-on: macos-latest
-    
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Rust setup
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Sync node version and setup cache
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20.8'
-
-      - name: Build Tauri App
-        run: |
-          TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-          TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
-          APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
-          APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
-          APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" 
-          yarn install
-          yarn tauri build --debug
-        env:
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-
-      - name: dmg sig
-        run: cat /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/*.sig
-
-      # - name: Upload to S3
-      #   uses: shallwefootball/s3-upload-action@master
-      #   with:
-      #     aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws_bucket: ${{ secrets.AWS_BUCKET }}
-      #     source_dir: '/src-tauri/target/debug/bundle/dmg'
-
-      - name: Install AWS CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y awscli
-
-      - name: Upload files to S3
-        run: |
-          aws s3 sync /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos s3://sparrow-release-assests
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-
   build_and_release_windows:
     runs-on: windows-latest
     
@@ -129,3 +76,94 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  build_and_release_macos:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Rust setup
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.8'
+
+      - name: Build Tauri App
+        run: |
+          TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
+          TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}" 
+          APPLE_SIGNING_IDENTITY="${{ secrets.APPLE_SIGNING_IDENTITY }}"
+          APPLE_CERTIFICATE="${{ secrets.APPLE_CERTIFICATE }}"
+          APPLE_CERTIFICATE_PASSWORD="${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" 
+          yarn install
+          yarn tauri build --debug
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      - name: dmg sig
+        run: cat /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/*.sig
+
+
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+          sudo installer -pkg AWSCLIV2.pkg -target /
+          aws --version
+
+      - name: Upload & downlode File to S3
+        run: |
+          aws s3 cp /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos s3://sparrow-release-assests
+          aws s3 cp /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg s3://sparrow-release-assests
+          aws s3 cp s3://sparrow-release-assests/*.msi /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Install App Center CLI
+        run: |
+          npm install -g appcenter-cli@latest
+
+      - name: Get PR Branch Name
+        id: pr_branch
+        run: echo "::set-output name=branch::$(echo ${{ github.head_ref }})"
+
+      - name: Upload to App Center
+        run: |
+          appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
+          branch_name="${{ steps.pr_branch.outputs.branch }}"
+          echo "Branch Name: $branch_name"
+          appcenter distribute release -f /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/*.dmg -g Collaborators --app techdome/Sparrow-1 --build-version test-${branch_name} --build-number ${{ github.run_number }}
+          appcenter distribute release -f /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg/*.msi -g Collaborators --app techdome/Sparrow --build-version test-${branch_name} --build-number ${{ github.run_number }}
+      - name: status check and upload
+        uses: neonidian/teams-notify-build-status@v3
+        if: always()
+        with:
+          webhookUrl: |
+            ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
+          message: |
+            🚀 **Build Status Update** 🚀
+            The workflow (sparrow-app for **Mac**) has completed with status: **${{ job.status }}**.
+            👉 Check it out latest release here [AppCenter](https://appcenter.ms/users/techdome/apps/Sparrow-mac)!
+          titleBackgroundColor: ${{ job.status }}
+        env:
+          SHOULD_DISPLAY_VIEW_COMMIT_BUTTON: true
+
+      - name: status check and upload
+        uses: neonidian/teams-notify-build-status@v3
+        if: always()
+        with:
+          webhookUrl: |
+           ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
+          message: |
+            🚀 **Build Status Update** 🚀
+            The workflow (sparrow-app for windows) has completed with status: **${{ job.status }}**.
+            👉 Check it out latest release here [AppCenter](https://appcenter.ms/users/techdome/apps/Sparrow)!
+          titleBackgroundColor: ${{ job.status }}
+        env:
+          SHOULD_DISPLAY_VIEW_COMMIT_BUTTON: true
