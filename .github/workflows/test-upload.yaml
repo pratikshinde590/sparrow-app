@@ -15,11 +15,12 @@ jobs:
 
       - name: Download and install AzCopy
         run: |
-          Invoke-WebRequest -Uri https://aka.ms/downloadazcopy-v10-windows -OutFile azcopy.zip
-          Expand-Archive -Path azcopy.zip -DestinationPath .\azcopy
-          Move-Item -Path .\azcopy\azcopy.exe -Destination C:\Windows\System32\
-          Remove-Item azcopy.zip -Force
+          Invoke-WebRequest -Uri https://aka.ms/downloadazcopy-v10-linux -OutFile azcopy.tar.gz
+          Expand-Archive -Path azcopy.tar.gz -DestinationPath .\azcopy
+          Move-Item -Path .\azcopy\azcopy.exe -Destination .
+          Remove-Item azcopy.tar.gz -Force
           Remove-Item -Path .\azcopy -Recurse -Force
+
 
 
 
