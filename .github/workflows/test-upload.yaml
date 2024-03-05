@@ -24,20 +24,20 @@ jobs:
       - name: Read tauri.conf.json
         id: read_file
         run: |
-          $content = Get-Content tauri.conf.json -Raw
+          $content = Get-Content src-tauri/tauri.conf.json -Raw
           Write-Output $content
         shell: powershell
 
       - name: Update updater endpoint in JSON file
         run: |
-          $content = Get-Content tauri.conf.json -Raw
+          $content = Get-Content src-tauri/tauri.conf.json -Raw
           $newContent = $content -replace '"https://api.sparrowapp.dev/updater/{{target}}/{{arch}}/{{current_version}}"', '"${{ steps.set_updater_endpoint.outputs.UPDATER_ENDPOINT }}"'
-          Set-Content -Path tauri.conf.json -Value $newContent
+          Set-Content -Path src-tauri/tauri.conf.json -Value $newContent
         shell: powershell
 
       - name: Print updated tauri.conf.json
         run: |
-          $content = Get-Content tauri.conf.json -Raw
+          $content = Get-Content src-tauri/tauri.conf.json -Raw
           Write-Output $content
         shell: powershell
 
