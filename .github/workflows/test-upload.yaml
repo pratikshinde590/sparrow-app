@@ -13,14 +13,28 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Print original tauri.conf.json
-      run: cat src-tauri/tauri.conf.json
- 
-    - name: Update endpoint in JSON file
-      uses: restackio/update-json-file-action@v2.0
-      with:
-        file: src-tauri/tauri.conf.json
-        fields: "{\"plugins.updater.endpoints[0]\": \"new value\"}"
+    - name: Get domain from secret
+      id: get_domain
+      run: echo "::set-output name=DOMAIN::${{ secrets.UPDATER_DOMAIN }}"
 
-    - name: Print original tauri.conf.json
-      run: cat src-tauri/tauri.conf.json
+    - name: Set updater endpoint
+      id: set_updater_endpoint
+      run: echo "::set-output name=UPDATER_ENDPOINT::https://${{ steps.get_domain.outputs.DOMAIN }}/updater/{{target}}/{{arch}}/{{current_version}}"
+
+    - name: Read tauri.conf.json
+      id: read_file
+      run: |
+        $content = Get-Content tauri.conf.json
+        Write-Output $content
+      shell: powershell
+
+    - name: Update updater endpoint in JSON file
+      run: |
+        (Get-Content tauri.conf.json) -replace '"https://api.sparrowapp.dev/updater/{{target}}/{{arch}}/{{current_version}}"', '"${{ steps.set_updater_endpoint.outputs.UPDATER_ENDPOINT }}"' | Set-Content tauri.conf.json
+      shell: powershell
+
+    - name: Print updated tauri.conf.json
+      run: |
+        $content = Get-Content tauri.conf.json
+        Write-Output $content
+      shell: powershell
