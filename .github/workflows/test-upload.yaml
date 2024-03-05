@@ -1,4 +1,4 @@
-name: Download and List MSI Files from S3
+name: Update Updater Endpoint
 
 on:
   push:
@@ -6,35 +6,46 @@ on:
       - main
 
 jobs:
-  build:
-    name: Build and Release
-    runs-on: windows-latest  # This specifies that the job should run on Windows
+  update_updater_endpoint:
+    name: Update Updater Endpoint
+    runs-on: windows-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Get domain from secret
-      id: get_domain
-      run: echo "::set-output name=DOMAIN::${{ secrets.UPDATER_DOMAIN }}"
+      - name: Get domain from secret
+        id: get_domain
+        run: echo "::set-output name=DOMAIN::${{ secrets.UPDATER_DOMAIN }}"
 
-    - name: Set updater endpoint
-      id: set_updater_endpoint
-      run: echo "::set-output name=UPDATER_ENDPOINT::https://${{ steps.get_domain.outputs.DOMAIN }}/updater/{{target}}/{{arch}}/{{current_version}}"
+      - name: Set updater endpoint
+        id: set_updater_endpoint
+        run: echo "::set-output name=UPDATER_ENDPOINT::https://${{ steps.get_domain.outputs.DOMAIN }}/updater/{{target}}/{{arch}}/{{current_version}}"
 
-    - name: Read tauri.conf.json
-      id: read_file
-      run: |
-        $content = Get-Content tauri.conf.json
-        Write-Output $content
-      shell: powershell
+      - name: Read tauri.conf.json
+        id: read_file
+        run: |
+          $content = Get-Content tauri.conf.json -Raw
+          Write-Output $content
+        shell: powershell
 
-    - name: Update updater endpoint in JSON file
-      run: |
-        (Get-Content tauri.conf.json) -replace '"https://api.sparrowapp.dev/updater/{{target}}/{{arch}}/{{current_version}}"', '"${{ steps.set_updater_endpoint.outputs.UPDATER_ENDPOINT }}"' | Set-Content tauri.conf.json
-      shell: powershell
+      - name: Update updater endpoint in JSON file
+        run: |
+          $content = Get-Content tauri.conf.json -Raw
+          $newContent = $content -replace '"https://api.sparrowapp.dev/updater/{{target}}/{{arch}}/{{current_version}}"', '"${{ steps.set_updater_endpoint.outputs.UPDATER_ENDPOINT }}"'
+          Set-Content -Path tauri.conf.json -Value $newContent
+        shell: powershell
 
-    - name: Print updated tauri.conf.json
-      run: |
-        $content = Get-Content tauri.conf.json
-        Write-Output $content
-      shell: powershell
+      - name: Print updated tauri.conf.json
+        run: |
+          $content = Get-Content tauri.conf.json -Raw
+          Write-Output $content
+        shell: powershell
+
+      # - name: Commit changes
+      #   run: |
+      #     git config --global user.name "Your Name"
+      #     git config --global user.email "youremail@example.com"
+      #     git add tauri.conf.json
+      #     git commit -m "Update updater endpoint"
+      #     git push
+      #   shell: powershell
