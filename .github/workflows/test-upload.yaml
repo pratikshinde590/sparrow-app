@@ -13,12 +13,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Read tauri.conf.json
-        id: read_file
-        run: |
-          $content = Get-Content src-tauri/tauri.conf.json -Raw
-          Write-Output $content
-        shell: pwsh
+      # - name: Read tauri.conf.json
+      #   id: read_file
+      #   run: |
+      #     $content = Get-Content src-tauri/tauri.conf.json -Raw
+      #     Write-Output $content
+      #   shell: pwsh
 
       - name: Update updater endpoint in JSON file
         run: |
@@ -27,11 +27,11 @@ jobs:
           Set-Content -Path src-tauri/tauri.conf.json -Value $newContent
         shell: pwsh
 
-      - name: Print updated tauri.conf.json
-        run: |
-          $content = Get-Content src-tauri/tauri.conf.json -Raw
-          Write-Output $content
-        shell: pwsh
+      # - name: Print updated tauri.conf.json
+      #   run: |
+      #     $content = Get-Content src-tauri/tauri.conf.json -Raw
+      #     Write-Output $content
+      #   shell: pwsh
 
       - name: Commit changes
         run: |
