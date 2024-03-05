@@ -9,6 +9,8 @@ jobs:
   build:
     name: Build and Release
     runs-on: windows-latest  # This specifies that the job should run on Windows
+    env:
+      UPDATER_ENDPOINT: ${{ secrets.UPDATER_ENDPOINT }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
