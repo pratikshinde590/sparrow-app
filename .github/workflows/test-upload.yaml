@@ -16,5 +16,5 @@ jobs:
     - name: Update endpoint in JSON file
       uses: restackio/update-json-file-action@v2.1
       with:
-        file: src-tauri/src/
+        file: src-tauri/src/tauri.conf.json
         fields: "{\"plugins.updater.endpoints[0]\": \"${{ secrets.UPDATER_ENDPOINT }}\"}"
