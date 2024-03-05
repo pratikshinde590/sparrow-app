@@ -13,39 +13,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Get domain from secret
-        id: get_domain
-        run: echo "::set-output name=DOMAIN::${{ secrets.UPDATER_DOMAIN }}"
-
-      - name: Set updater endpoint
-        id: set_updater_endpoint
-        run: echo "::set-output name=UPDATER_ENDPOINT::https://${{ steps.get_domain.outputs.DOMAIN }}/updater/{{target}}/{{arch}}/{{current_version}}"
-
       - name: Read tauri.conf.json
         id: read_file
         run: |
           $content = Get-Content src-tauri/tauri.conf.json -Raw
           Write-Output $content
-        shell: powershell
+        shell: pwsh
 
       - name: Update updater endpoint in JSON file
         run: |
           $content = Get-Content src-tauri/tauri.conf.json -Raw
-          $newContent = $content -replace '"https://api.sparrowapp.dev/updater/{{target}}/{{arch}}/{{current_version}}"', '"${{ steps.set_updater_endpoint.outputs.UPDATER_ENDPOINT }}"'
+          $newContent = $content -replace '"https://api.sparrowapp.dev/updater/{{target}}/{{arch}}/{{current_version}}"', '"https://${{ secrets.UPDATER_ENDPOINT }}/updater/{{target}}/{{arch}}/{{current_version}}"'
           Set-Content -Path src-tauri/tauri.conf.json -Value $newContent
-        shell: powershell
+        shell: pwsh
 
       - name: Print updated tauri.conf.json
         run: |
           $content = Get-Content src-tauri/tauri.conf.json -Raw
           Write-Output $content
-        shell: powershell
+        shell: pwsh
 
-      # - name: Commit changes
-      #   run: |
-      #     git config --global user.name "Your Name"
-      #     git config --global user.email "youremail@example.com"
-      #     git add tauri.conf.json
-      #     git commit -m "Update updater endpoint"
-      #     git push
-      #   shell: powershell
+      - name: Commit changes
+        run: |
+          git config --global user.name "pratik"
+          git config --global user.email "pratik.shinde@techdome.net.in"
+          git add src-tauri/tauri.conf.json
+          git commit -m "Update updater endpoint"
+          git push
+        shell: pwsh
