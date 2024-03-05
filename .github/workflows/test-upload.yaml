@@ -6,30 +6,15 @@ on:
       - main
 
 jobs:
-  download_and_list:
-    runs-on: macos-latest
+  build:
+    name: Build and Release
+    runs-on: windows-latest  # This specifies that the job should run on Windows
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Install AWS CLI
-        run: |
-          curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
-          sudo installer -pkg AWSCLIV2.pkg -target /
-          aws --version
-
-      # - name: Create msi_files directory
-      #   run: |
-      #     mkdir msi_files
-
-      - name: Download MSI files from S3 bucket
-        run: |
-          mkdir msi_files
-          aws s3 cp s3://sparrow-release-assests/ msi_files/ --recursive --exclude "*" --include "*.msi"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: List downloaded MSI files
-        run: |
-          ls -l *.msi
+    - name: Checkout code
+      uses: actions/checkout@v3
+ 
+    - name: Update endpoint in JSON file
+      uses: restackio/update-json-file-action@v2.1
+      with:
+        file: src-tauri/src/
+        fields: "{\"plugins.updater.endpoints[0]\": \"${{ secrets.UPDATER_ENDPOINT }}\"}"
