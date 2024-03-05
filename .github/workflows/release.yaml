@@ -110,7 +110,7 @@ jobs:
         run: cat /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/*.sig
 
       - name: Create zip file
-        run: zip /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/Sparrow.app
+        run: zip /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/sparrow-app.app
 
       - name: Install AWS CLI
         run: |
