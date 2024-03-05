@@ -20,7 +20,7 @@ jobs:
       uses: restackio/update-json-file-action@v2.0
       with:
         file: src-tauri/tauri.conf.json
-        fields: "{\"plugins.updater.endpoints[0]\": \"${{ secrets.UPDATER_ENDPOINT }}\"}"
+        fields: "{\"plugins.updater.endpoints[0]\": \"new value\"}"
 
     - name: Print original tauri.conf.json
       run: cat src-tauri/tauri.conf.json
