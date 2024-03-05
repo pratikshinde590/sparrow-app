@@ -15,12 +15,15 @@ jobs:
 
     - name: Print original tauri.conf.json
       run: cat src-tauri/tauri.conf.json
+
+    - name: Get UPDATER_ENDPOINT secret
+      run: echo "::set-env name=UPDATER_ENDPOINT::${{ secrets.UPDATER_ENDPOINT }}"
  
-    - name: Update endpoint in JSON file
-      uses: restackio/update-json-file-action@v2.0
+    - name: Update updater endpoint in JSON file
+      uses: restackio/update-json-file-action@v2.1
       with:
-        file: src-tauri/tauri.conf.json
-        fields: "{\"plugins.updater.endpoints[0]\": \"${{ secrets.UPDATER_ENDPOINT }}\"}"
+        file: tauri.conf.json
+        fields: "{\"plugins.updater.endpoints\": [\"${UPDATER_ENDPOINT}\"]}"
 
     - name: Print original tauri.conf.json
       run: cat src-tauri/tauri.conf.json
