@@ -9,27 +9,18 @@ jobs:
   build:
     name: Build and Release
     runs-on: windows-latest  # This specifies that the job should run on Windows
-    env:
-      UPDATER_ENDPOINT: ${{ secrets.UPDATER_ENDPOINT }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Print original tauri.conf.json
       run: cat src-tauri/tauri.conf.json
-
-    - name: Set UPDATER_ENDPOINT environment variable
-      run: |
-        echo "::set-env name=UPDATER_ENDPOINT::${{ secrets.UPDATER_ENDPOINT }}"
-      shell: pwsh
-    
-    - name: Update updater endpoint in JSON file
-      run: |
-        restackio/update-json-file-action@v2.1
-        with:
-          file: tauri.conf.json
-          fields: "{\"plugins.updater.endpoints\": [\"${{ env.UPDATER_ENDPOINT }}\"]}"
-      shell: pwsh
+ 
+    - name: Update endpoint in JSON file
+      uses: restackio/update-json-file-action@v2.0
+      with:
+        file: src-tauri/tauri.conf.json
+        fields: "{\"plugins.updater.endpoints[0]\": \"${{ secrets.UPDATER_ENDPOINT }}\"}"
 
     - name: Print original tauri.conf.json
       run: cat src-tauri/tauri.conf.json
