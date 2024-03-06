@@ -16,7 +16,7 @@ jobs:
       - name: Update updater endpoint in JSON file
         run: |
           content=$(<src-tauri/tauri.conf.json)
-          newContent=$(echo "$content" | sed 's|"https://api.sparrowapp.dev/updater/{{target}}/{{arch}}/{{current_version}}"|"https://${{ secrets.UPDATER_ENDPOINT }}/updater/{{target}}/{{arch}}/{{current_version}}"|g')
+          newContent=$(echo "$content" | sed 's|"https://{{END_POINT}}/updater/{{target}}/{{arch}}/{{current_version}}"|"https://${{ secrets.UPDATER_ENDPOINT }}/updater/{{target}}/{{arch}}/{{current_version}}"|g')
           echo "$newContent" > src-tauri/tauri.conf.json
         shell: bash
 
