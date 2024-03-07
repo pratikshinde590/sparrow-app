@@ -1,4 +1,4 @@
-name: Release
+name: Production Release
 
 on:
   push:
@@ -6,17 +6,18 @@ on:
       - main
 
 env: 
-  VITE_API_URL: ${{ secrets.VITE_API_URL_DEV }}
-  VITE_MIX_PANEL_TOKEN: ${{ secrets.VITE_MIX_PANEL_TOKEN }}
-  VITE_ENABLE_MIX_PANEL: ${{ secrets.VITE_ENABLE_MIX_PANEL }}
-  VITE_API_TIMEOUT: ${{ secrets.VITE_API_TIMEOUT }}
+  VITE_API_URL: ${{secrets.VITE_API_URL}}
+  VITE_MIX_PANEL_TOKEN: ${{secrets.VITE_MIX_PANEL_TOKEN}}
+  VITE_ENABLE_MIX_PANEL: ${{secrets.VITE_ENABLE_MIX_PANEL}}
+  VITE_API_TIMEOUT: ${{secrets.VITE_API_TIMEOUT}}
   VITE_SPARROW_SUPPORT_EMAIL: ${{ secrets.VITE_SPARROW_SUPPORT_EMAIL }}
   VITE_AUTH_URL: ${{ secrets.VITE_AUTH_URL_DEV }}
   VITE_SPARROW_GITHUB: ${{ secrets.VITE_SPARROW_GITHUB }}
+  VITE_SPARROW_DOWNLOAD_LINK: ${{ secrets.VITE_SPARROW_DOWNLOAD_LINK }}
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
-  build_and_release_windows:
+  release_win:
     runs-on: windows-latest
     
     steps:
@@ -36,6 +37,13 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1
+
+      - name: Update updater endpoint in tauri.conf.json file
+        run: |
+          $content = Get-Content src-tauri/tauri.conf.json -Raw
+          $newContent = $content -replace '"https://{{UPDATER_URL}}/updater/{{target}}/{{arch}}/{{current_version}}"', '"https://${{ secrets.UPDATER_ENDPOINT_PROD }}/updater/{{target}}/{{arch}}/{{current_version}}"'
+          Set-Content -Path src-tauri/tauri.conf.json -Value $newContent
+        shell: pwsh
 
       - name: Build Tauri App
         run: |
@@ -63,22 +71,28 @@ jobs:
            $password = ConvertTo-SecureString -String "sparrow123" -Force -AsPlainText
            Export-PfxCertificate -Cert $certPath -FilePath "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\Certificate.pfx" -Password $password
            & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\SignTool.exe" sign /f "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\Certificate.pfx" /p sparrow123 /tr http://timestamp.digicert.com /td sha256 /fd sha256 /v "D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi\*.msi"
+
       - name: Install AWS CLI
         uses: chrislennon/action-aws-cli@v1.1
         with:
           version: latest
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
+  
       - name: Upload files to S3
         run: |
-          aws s3 sync D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi s3://sparrow-release-assests --exclude "*" --include "*.zip" --include "*.msi"
+          aws s3 sync D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\msi s3://sparrow-release-assests-prod --exclude "*" --include "*.zip" --include "*.msi"
+          aws s3 sync D:\a\sparrow-app\sparrow-app\src-tauri\target\debug\bundle\nsis s3://sparrow-release-assests-prod --exclude "*" --include "*.exe"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
 
-  build_and_release_macos:
+
+
+  release_macos:
     runs-on: macos-latest
+    needs: release_win
     
     steps:
       - name: Checkout Repository
@@ -92,6 +106,13 @@ jobs:
         with:
           node-version: '20.8'
 
+      - name: Update updater endpoint in tauri.conf.json file
+        run: |
+          content=$(<src-tauri/tauri.conf.json)
+          newContent=$(echo "$content" | sed 's|"https://{{UPDATER_URL}}/updater/{{target}}/{{arch}}/{{current_version}}"|"https://${{ secrets.UPDATER_ENDPOINT_PROD }}/updater/{{target}}/{{arch}}/{{current_version}}"|g')
+          echo "$newContent" > src-tauri/tauri.conf.json
+        shell: bash
+
       - name: Build Tauri App
         run: |
           TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
@@ -104,24 +125,20 @@ jobs:
         env:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PR_GITHUB_TOKEN }}
 
       - name: dmg sig
         run: cat /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/*.sig
-
-      # - name: Create zip file
-      #   run: zip /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/sparrow-app.app
 
       - name: Install AWS CLI
         run: |
           curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
           sudo installer -pkg AWSCLIV2.pkg -target /
           aws --version
-
-      - name: Upload & downlode File to S3
+      - name: Upload & File to S3
         run: |
-          aws s3 cp /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos s3://sparrow-release-assests --recursive --exclude "*" --include "*.gz" --include "*.sig"
-          aws s3 cp /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/dmg s3://sparrow-release-assests --recursive --exclude "*" --include "*.dmg"
+          aws s3 cp /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos s3://sparrow-release-assests-prod --recursive --exclude "*" --include "*.gz"
+          
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -129,51 +146,19 @@ jobs:
       - name: Download MSI files from S3 bucket
         run: |
           mkdir msi_files
-          aws s3 cp s3://sparrow-release-assests/ msi_files/ --recursive --exclude "*" --include "*.msi"
+          aws s3 cp s3://sparrow-release-assests-prod/ msi_files/ --recursive --exclude "*" --include "*.msi" --include "*.exe" --include "*.zip"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}       
 
+          
+      - name: Fetch Version from package.json
+        id: fetch-version
+        run: echo "::set-output name=version::$(jq -r .version package.json)"
 
-      - name: Install App Center CLI
-        run: |
-          npm install -g appcenter-cli@latest
-
-      - name: Get PR Branch Name
-        id: pr_branch
-        run: echo "::set-output name=branch::$(echo ${{ github.head_ref }})"
-
-      - name: Upload to App Center
-        run: |
-          appcenter login --token ${{ secrets.APPCENTER_API_TOKEN }}
-          branch_name="${{ steps.pr_branch.outputs.branch }}"
-          echo "Branch Name: $branch_name"
-          appcenter distribute release -f /Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/sparrow-app.app -g Collaborators --app techdome/Sparrow-1 --build-version test-${branch_name} --build-number ${{ github.run_number }}
-          appcenter distribute release -f msi_files/*.msi -g Collaborators --app techdome/Sparrow --build-version test-${branch_name} --build-number ${{ github.run_number }}
-      - name: status check and upload
-        uses: neonidian/teams-notify-build-status@v3
-        if: always()
-        with:
-          webhookUrl: |
-            ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
-          message: |
-            🚀 **Build Status Update** 🚀
-            The workflow (sparrow-app for **Mac**) has completed with status: **${{ job.status }}**.
-            👉 Check it out latest release here [AppCenter](https://appcenter.ms/users/techdome/apps/Sparrow-mac)!
-          titleBackgroundColor: ${{ job.status }}
+      - name: Semantic Release
+        run: npx semantic-release
         env:
-          SHOULD_DISPLAY_VIEW_COMMIT_BUTTON: true
-
-      - name: status check and upload
-        uses: neonidian/teams-notify-build-status@v3
-        if: always()
-        with:
-          webhookUrl: |
-           ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
-          message: |
-            🚀 **Build Status Update** 🚀
-            The workflow (sparrow-app for windows) has completed with status: **${{ job.status }}**.
-            👉 Check it out latest release here [AppCenter](https://appcenter.ms/users/techdome/apps/Sparrow)!
-          titleBackgroundColor: ${{ job.status }}
-        env:
-          SHOULD_DISPLAY_VIEW_COMMIT_BUTTON: true
+          GITHUB_TOKEN: ${{ secrets.PR_GITHUB_TOKEN }}
+          
+          
