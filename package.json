@@ -106,12 +106,8 @@
                       "label": "Sparrow.msi"
                     },
                     {
-                      "path": "msi_files/sparrow_1.1.0_x64_en-US.msi.zip",
+                      "path": "msi_files/*.zip",
                       "label": "Sparrow_1.1.0_x64_en-US.msi.zip"
-                    },
-                    {
-                      "path": "msi_files/sparrow_1.1.0_x64-setup.nsis.zip",
-                      "label": "Sparrow_1.1.0_x64-setup.nsis.zip"
                     },
                     {
                       "path": "/Users/runner/work/sparrow-app/sparrow-app/src-tauri/target/debug/bundle/macos/sparrow.app.tar.gz",
