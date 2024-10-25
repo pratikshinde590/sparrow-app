@@ -1,0 +1,54 @@
+[package]
+name = "sparrow-app"
+version = "0.0.0"
+description = "Sparrow"
+authors = ["sparrow"]
+repository = "https://github.com/sparrowapp-dev/sparrow-app"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "2.0.0-beta", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.0-beta", features = [] }
+tauri-plugin-deep-link = "2.0.0-beta"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+json = "0.12.4"
+regex = "1.4.6"
+dotenv = "0.15"
+anyhow = "1.0"
+nfd = "0.0.4"
+flate2 = "1.0"
+futures-util = "0.3"
+brotli = "3.3.0"
+reqwest = { version = "0.11", features = [
+    "blocking",
+    "json",
+    "multipart",
+    "stream",
+] }
+http = "0.2"
+hyper = { version = "0.14", features = ["client", "http1", "http2"] }
+hyper-tls = "0.5"
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.6", features = ["full"] }
+tokio-tungstenite = { version = "0.16", features = ["native-tls"] }
+native-tls = "0.2"
+tungstenite = "0.20.1"
+url = "2.2"
+futures = "0.3"
+tauri-plugin-os = "2.0.0-beta.0"
+tauri-plugin-updater = "2.0.0-beta"
+tauri-plugin-process = "2.0.0-beta"
+tauri-plugin-single-instance = "2.0.0-beta.2"
+tauri-plugin-shell = "2.0.0-beta.1"
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = "0.2"
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
