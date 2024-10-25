@@ -55,7 +55,7 @@ Then, run the following commands :
 git clone https://github.com/sparrowapp-dev/sparrow-app
 
 # Move into the project root
-cd sparrow-app
+#cd sparrow-app
 
 # Install dependencies and Husky hooks
 yarn
