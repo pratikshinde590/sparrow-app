@@ -8,13 +8,13 @@
 ![screenshot](https://sparrowassets.blob.core.windows.net/publicassest/Sparrow-Dashboard-Readme.png)
 
 ![TypeScript](https://img.shields.io/badge/-TypeScript-black?style=for-the-badge&logoColor=white&logo=typescript&color=2F73BF)
-<!-- ![Nest](https://img.shields.io/badge/-NestJs-black?style=for-the-badge&logo=nestjs&color=E0234D)
+![Nest](https://img.shields.io/badge/-NestJs-black?style=for-the-badge&logo=nestjs&color=E0234D)
 ![Mongoose](https://img.shields.io/badge/-MongoDB-black?style=for-the-badge&logoColor=white&logo=mongodb&color=127237)
 ![Rust](https://img.shields.io/badge/-Rust-black?style=for-the-badge&logoColor=white&logo=rust&color=000000)
 ![Tauri](https://img.shields.io/badge/Tauri-FFC131?style=for-the-badge&logo=Tauri&logoColor=white)
 ![Svelte](https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00)
 ![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)\
-[![Quality Gate Status](https://sonar.techdomeaks.com/api/project_badges/measure?project=sparrow&metric=alert_status&token=sqb_aaefedc197c76ac808596f3e44d5e8d5b06ed348)](https://sonar.techdomeaks.com/dashboard?id=sparrow) -->
+[![Quality Gate Status](https://sonar.techdomeaks.com/api/project_badges/measure?project=sparrow&metric=alert_status&token=sqb_aaefedc197c76ac808596f3e44d5e8d5b06ed348)](https://sonar.techdomeaks.com/dashboard?id=sparrow)
 
 ## 📋 Table of Contents
 
